@@ -8,13 +8,13 @@ viewer = mujoco_py.MjViewer(sim)
 
 t = 0
 
-while True: 
+while True:
 
     t += 1
     sim.step()
+    print(sim.data.qpos)
+
     viewer.render()
 
     if t > 500:
         break
-
-
