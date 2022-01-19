@@ -5,7 +5,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-class UR5_EnvTest():
+class UR5_EnvTest(gym.Env):
     def __init__(self,width, height, rewarded_distance, control_magnitude, frame_skip):
         """
         argumentos:
@@ -20,7 +20,7 @@ class UR5_EnvTest():
         self.frame_skip = fram_skip
 
         #inicializar el modelo del robot
-        self.robot = mujoco_py.load_model_from_path('assets/UR5/robotModel.xml')
+        self.robot = mujoco_py.load_model_from_path('../assets/UR5/robotModel.xml')
         self.sim = mujoco_py.MjSim(self.robot)
 
         # inicializar la posicion y velocidad
