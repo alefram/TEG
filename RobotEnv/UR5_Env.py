@@ -15,11 +15,13 @@ class UR5_EnvTest():
         #inicializar el modelo del robot
         self.robot = mujoco_py.load_model_from_path('assets/UR5/robotModel.xml')
         self.sim = mujoco_py.MjSim(self.robot)
-        pass
+
+        # inicializar la posicion y velocidad
+        self.init_qpos = self.sim.data.qpos.ravel().copy()
+        self.init_qvel = self.sim.data.qvel.ravel().copy()
+
 
     def step(self, action):
-
-        #aplicar
 
         return self.observations(), reward, done
 
@@ -27,8 +29,16 @@ class UR5_EnvTest():
     def reset(self):
 
         #obtener la posicion inicial del robot
+        qpos = self.init_qpos
+        qvel = self.init_qvel
 
         #inicializar las posiciones  y velocidades de las articulaciones
+        # nq: numero de coordenadas generalizadas
+        # nv: numero de grados de libertad
+        assert qpos.shape == (self.sim.model.nq) and qvel.shape == (self.sim.model.nv)
+        self.sim.data.qpos[:] = qpos
+        self.sim.data.qvel[:] = qvel
+        self.sim.foward()
 
         return self.observations()
 
@@ -46,4 +56,8 @@ class UR5_EnvTest():
 
     def observations(self):
 
-        pass
+        joints = np.concatenate(
+            [self.sim.data.qpos.flat[:], self.sim.data.qvel.flat[:]]
+        )
+
+        return joints
