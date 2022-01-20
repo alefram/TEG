@@ -295,12 +295,9 @@ Simulador Mujoco ::Advanced physics simulation engine
         <position name="joint3_position" joint="joint3"/>
         <position name="joint4_position" joint="joint4"/>
         <position name="joint5_position" joint="joint5"/>
-        <position name="joint6_position" joint="joint6"/
+        <position name="joint6_position" joint="joint6"/>
 
-        <motor name="gravity_1" joint="free_z_1" gear="1 0 0 0 0 0" />
-        <motor name="gravity_2" joint="free_z_2" gear="1 0 0 0 0 0" />
-        <motor name="gravity_3" joint="free_z_3" gear="1 0 0 0 0 0" />
-        <motor name="gravity_4" joint="free_z_4" gear="1 0 0 0 0 0" />
+
         <motor name="close_1" joint="joint7_1" gear="0.2 0 0 0 0 0" />
         <motor name="close_2" joint="joint7_2" gear="0.2 0 0 0 0 0" />
         <motor name="joint1_motor" joint="joint1" gear="1.2"/>
