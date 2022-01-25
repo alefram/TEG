@@ -2,7 +2,7 @@ import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
-env = UR5_EnvTest(400,400,0.2,100,100, False)
+env = UR5_EnvTest(400,400,0.2,100,100, True)
 # viewer = mujoco_py.MjViewer(env.sim)
 
 
