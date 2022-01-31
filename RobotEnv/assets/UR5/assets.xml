@@ -1,0 +1,94 @@
+<mujocoinclude>
+    <mesh name="robotiq_85_base_link_coarse" file="robotiq_85_base_link_coarse.STL"/>
+    <mesh name="inner_knuckle_coarse" file="inner_knuckle_coarse.STL"/>
+    <mesh name="inner_finger_coarse" file="inner_finger_coarse.STL"/>
+    <mesh name="outer_knuckle_coarse" file="outer_knuckle_coarse.STL"/>
+    <mesh name="outer_finger_coarse" file="outer_finger_coarse.STL"/>
+    <mesh name="ur5_base" file="ur5_base.stl"/>
+    <mesh name="shoulder" file="shoulder.stl"/>
+    <mesh name="upperarm" file="upperarm.stl"/>
+    <mesh name="forearm"  file="forearm.stl"/>
+    <mesh name="wrist1"   file="wrist1.stl"/>
+    <mesh name="wrist2"   file="wrist2.stl"/>
+    <mesh name="wrist3"   file="wrist3.stl"/>
+    <mesh name="base"     file="base.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="driver"   file="driver.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="coupler"  file="coupler.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="follower" file="follower.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="pad"      file="pad.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="spring_link" file="spring_link.stl" scale="0.001 0.001 0.001"/>
+
+    <material
+        name="RobMat"
+        specular="0.9"
+        shininess="0.5"
+        reflectance="0"
+        rgba="0.7 0.7 0.7 1"
+        emission="0.1"
+    />
+    <material
+        name="Light"
+        specular="0"
+        shininess="0.6"
+        reflectance="0.9"
+        rgba="0.5 0.5 1 1"
+        emission="0.7"
+    />
+    <material
+        name="GriMat"
+        specular="0.9"
+        shininess="0.5"
+        reflectance="0"
+        rgba="0.1 0.1 0.1 1"
+        emission="0.1"
+    />
+
+    <texture
+        type="skybox"
+        builtin="gradient"
+        rgb1="0.3 0.5 0.7"
+        rgb2="0 0 0"
+        width="512"
+        height="512"
+    />
+
+    <texture
+        name="texplane"
+        type="2d"
+        builtin="checker"
+        rgb1=".2 .3 .4"
+        rgb2=".1 0.15 0.2"
+        width="512"
+        height="512"
+        mark="cross"
+        markrgb=".8 .8 .8"
+    />
+
+    <texture
+        name="texgeom"
+        type="cube"
+        builtin="flat"
+        mark="cross"
+        width="127"
+        height="1278"
+        rgb1="0.8 0.6 0.4"
+        rgb2="0.8 0.6 0.4"
+        markrgb="1 1 1"
+        random="0.01"
+    />
+
+    <material
+        name="matplane"
+        texture="texplane"
+        texrepeat="1 1"
+        texuniform="true"
+    />
+
+    <material
+        name="matgeom"
+        texture="texgeom"
+        texuniform="true"
+        rgba="0.8 0.6 .4 1"
+    />
+
+</mujocoinclude>

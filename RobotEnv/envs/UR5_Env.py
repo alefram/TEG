@@ -21,7 +21,7 @@ class UR5_EnvTest():
         self.Gui = Gui
 
         #inicializar el modelo del robot
-        self.robot = mujoco_py.load_model_from_path('RobotEnv/assets/UR5/robotModel.xml')
+        self.robot = mujoco_py.load_model_from_path('RobotEnv/assets/UR5/robotModelV2.xml')
         self.sim = mujoco_py.MjSim(self.robot)
 
         if self.Gui:
@@ -60,10 +60,10 @@ class UR5_EnvTest():
 
         #general el sistema de recompenza
         dist[0] = np.linalg.norm (
-            self.sim.data.get_body_xpos("right_spring_link") - self.goal
+            self.sim.data.get_body_xpos("left_inner_finger") - self.goal
         )
         dist[1] = np.linalg.norm (
-            self.sim.data.get_body_xpos("left_spring_link") -  self.goal
+            self.sim.data.get_body_xpos("right_inner_finger") -  self.goal
         )
 
         if any(d < self.rewarded_distance for d in dist):
@@ -123,10 +123,10 @@ class UR5_EnvTest():
         if self.Gui:
             self.viewer.render()
         else:
-            rgb = self.sim.render(width=self.width, height = self.height, camera_name=camera)  
+            rgb = self.sim.render(width=self.width, height = self.height, camera_name=camera)
 
             return rgb
-        
+
 
     def close(self):
         pass
