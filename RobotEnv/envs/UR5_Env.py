@@ -28,24 +28,23 @@ class UR5_EnvTest():
             self.viewer = mujoco_py.MjViewer(self.sim)
 
 
-        # inicializar la posicion y velocidad
-        self.init_qpos = self.sim.data.qpos.ravel().copy()
+        # configurar actuadores
+        self.sim.data.qpos[:] = [6,2,4,1,3,-5]
+        self.init_qpos = self.sim.data.qpos
         self.init_qvel = self.sim.data.qvel.ravel().copy()
-
-        #configurar actuadores
         self.actuator_bounds = self.sim.model.actuator_ctrlrange #limites del actuador
         self.actuator_low = self.actuator_bounds[:, 0]
         self.actuator_high = self.actuator_bounds[:, 1]
         self.actuator_controlRange = self.actuator_high - self.actuator_low
         self.actuators = len(self.actuator_low)
 
-        #configurar los espacio de acción discretos
+        #configurar los espacio de acción
         self.control_values = self.actuator_controlRange * control_magnitude
         self.num_actions = 2
         self.action_space = [list(range(self.num_actions))] * self.actuators
         self.observation_space = ((0,), (height, width, 3), (height, width, 3))
 
-        #configurar los limites de la posicion objetivo
+        #configurar el target
         self.target_bounds = np.array(((0.4, 0.6), (0.1, 0.3), (0.2, 0.3)))
         self.target_reset_distance = 0.2
 
@@ -53,22 +52,26 @@ class UR5_EnvTest():
         self.reset()
 
     def step(self, action):
+
+        #inicializar variables
         dist = np.zeros(2)
         done = False
         reward = 0
         controller = np.copy(self.sim.data.ctrl).flatten()
 
-        #general el sistema de recompenza
+
+        #generar el sistema de recompenza
         dist[0] = np.linalg.norm (
             self.sim.data.get_body_xpos("left_inner_finger") - self.goal
         )
         dist[1] = np.linalg.norm (
-            self.sim.data.get_body_xpos("right_inner_finger") -  self.goal
+            self.sim.data.get_body_xpos("right_inner_finger") - self.goal
         )
 
         if any(d < self.rewarded_distance for d in dist):
             reward = 1
             self.reset_target()
+
 
         #crear las acciones posibles del agente
         for i in range(self.actuators):
@@ -153,8 +156,8 @@ class UR5_EnvTest():
         control: un vector del tamaño del numero de actuadores -- nuevo control enviado a los actuadores
         """
 
-        control = np.min((control, self.actuator_high), axis=0)
-        control = np.max((control, self.actuator_low), axis=0)
+        # control = np.min((control, self.actuator_high), axis=0)
+        # control = np.max((control, self.actuator_low), axis=0)
 
         self.sim.data.ctrl[:] = control
 
