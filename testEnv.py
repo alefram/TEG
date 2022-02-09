@@ -2,7 +2,7 @@ import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
-env = UR5_EnvTest(400,400,100,100000000,100, True)
+env = UR5_EnvTest(100,50,True)
 
 
 
@@ -14,9 +14,12 @@ for i_episode in range(20):
 
         env.render()
 
-        print("observación", observation)
-        action = env.action_space
+        action = 1
         observation, reward, done = env.step(action)
+        print("observación", observation)
+
         if done:
             print("Episode finished after {} timesteps".format(t+1))
             break
+
+env.close()
