@@ -1,5 +1,6 @@
 import mujoco_py
 import argparse
+import numpy as np
 
 #indicaciones para ingresar por el usuario
 parser = argparse.ArgumentParser(description="UR5")
@@ -19,6 +20,7 @@ while True:
 
     t += 1
     sim.set_state(sim_state)
+
 
     for  i in  range(1000):
         if i < 150:

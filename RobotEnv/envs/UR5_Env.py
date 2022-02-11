@@ -37,21 +37,22 @@ class UR5_EnvTest():
 
 
         #configurar el target
+        self.target_position = self.sim.data.get_geom_xpos("target")
+        self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1)))
 
 
-        self.seed()
+        # self.seed()
         self.reset()
 
     def reset(self):
 
         #inicializar la posición de un objeto eleatorio para iniciar el episodio
-        # self.reset_target()
+        self.reset_target()
 
         #inicializar las posiciones  y velocidades de las articulaciones
-        # nq: numero de coordenadas generalizadas
-        # nv: numero de grados de libertad
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
+
         self.sim.forward()
 
         return self.observations()
@@ -79,7 +80,7 @@ class UR5_EnvTest():
         self.sim.data.ctrl[:] = controller
         for _ in range(self.simulation_frames):
             self.sim.step()
-            
+
 
         # incrementar la recompenza a largo plazo
         self.acumulative_reward += 1
@@ -92,8 +93,6 @@ class UR5_EnvTest():
     def render(self, camera=None):
         if self.Gui:
             self.viewer.render()
-
-
 
     def close(self):
         if self.viewer is not None:
@@ -114,7 +113,17 @@ class UR5_EnvTest():
 
 
     def reset_target(self):
-        pass
+        # Randomize goal position within specified bounds
+        self.goal = np.random.rand(3) * (self.target_bounds[:, 1] -
+                                         self.target_bounds[:, 0]
+                                         ) + self.target_bounds[:, 0]
+        geom_positions = self.sim.model.geom_pos.copy()
+        prev_goal_location = geom_positions[1]
+
+
+        geom_positions[1] = self.goal
+        self.sim.model.geom_pos[:] = geom_positions
+
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

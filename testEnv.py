@@ -5,10 +5,10 @@ import mujoco_py
 env = UR5_EnvTest(100,50,True)
 
 
-
 for i_episode in range(20):
     print("estoy en pisodio",i_episode)
-    observation = env.reset()
+    env.reset()
+
     for t in range(100):
         print("paso ", t)
 
