@@ -23,8 +23,7 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     <!-- configuracion del compilador -->
     <compiler inertiafromgeom='true' angle='radian' meshdir="meshes/V2"/>
-    <option  timestep="0.02" gravity="0 0 0" />
-    <size njmax="500" nconmax="100"/>
+    <option  timestep="0.02" gravity="0 0 0"/>
 
     <!-- valores por defecto para la simulación -->
     <default>
@@ -60,15 +59,15 @@ Simulador Mujoco ::Advanced physics simulation engine
         <light directional="false" pos="-0.5 0.5 1.5" dir="0 -1 0" />
 
         <!-- modelo del robot-->
-        <body name="robot" pos="0.4 -0.4 0.4">
+        <body name="robot" pos="0 0 0.4">
             <geom
-                pos="0.28 0 0"
+                pos="0 0 0"
                 type="mesh"
                 rgba="0.7 0.7 0.7 1"
                 quat="0.681998 0 0 -0.731354"
                 mesh="ur5_base"
             />
-    		<body name="base_link" pos="0.28 0 0.086" quat="-0.03489996 0. 0. -0.99939078">
+    		<body name="base_link" pos="0 0 0.086" quat="-0.03489996 0. 0. -0.99939078">
                 <inertial pos="0 0 0" mass="3.7" diaginertia="0.0102675 0.0102675 0.00666" />
                 <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="shoulder" />
                 <!-- indicador de actuador 1 -->
@@ -182,25 +181,26 @@ Simulador Mujoco ::Advanced physics simulation engine
         </body>
 
         <!-- target -->
-        <body name="target_body_1" pos="0 0.5 0.6">
-            <geom
-                name="target_1"
-                pos="0 0 0"
-                size="0.025 0.025 0.025"
-                type="box"
-                rgba="0.9529411765 0.8 0.03529411765 1"
-            />
-        </body>
+        <geom
+            name="target"
+            pos="0 .5 0.4"
+            size="0.05"
+            type="sphere"
+            rgba="0.9 0.2 0.2 1"
+            contype='0'
+            conaffinity="0"
+        />
+
     </worldbody>
 
     <!-- actuadores -->
     <actuator>
-        <!-- <velocity name="joint1_velocity" joint="joint1"/>
-        <velocity name="joint2_velocity" joint="joint2"/>
-        <velocity name="joint3_velocity" joint="joint3"/>
-        <velocity name="joint4_velocity" joint="joint4"/>
-        <velocity name="joint5_velocity" joint="joint5"/>
-        <velocity name="joint6_velocity" joint="joint6"/> -->
+        <velocity name="joint1_velocity" joint="joint1" ctrlrange="-1 1"/>
+        <velocity name="joint2_velocity" joint="joint2" ctrlrange="-1 1"/>
+        <velocity name="joint3_velocity" joint="joint3" ctrlrange="-1 1"/>
+        <velocity name="joint4_velocity" joint="joint4" ctrlrange="-1 1"/>
+        <velocity name="joint5_velocity" joint="joint5" ctrlrange="-1 1"/>
+        <velocity name="joint6_velocity" joint="joint6" ctrlrange="-1 1"/>
 
         <!-- <position name="joint1_position" joint="joint1"/>
         <position name="joint2_position" joint="joint2"/>
@@ -209,11 +209,11 @@ Simulador Mujoco ::Advanced physics simulation engine
         <position name="joint5_position" joint="joint5"/>
         <position name="joint6_position" joint="joint6"/> -->
 
-        <motor name="joint1_motor" joint="joint1"/>
+        <!-- <motor name="joint1_motor" joint="joint1"/>
         <motor name="joint2_motor" joint="joint2"/>
         <motor name="joint3_motor" joint="joint3"/>
         <motor name="joint4_motor" joint="joint4"/>
         <motor name="joint5_motor" joint="joint5"/>
-        <motor name="joint6_motor" joint="joint6"/>
+        <motor name="joint6_motor" joint="joint6"/> -->
 	</actuator>
 </mujoco>
