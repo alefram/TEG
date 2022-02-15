@@ -5,7 +5,7 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-class UR5_EnvTest():
+class UR5_EnvTest(gym.Env):
     def __init__(self, rewarded_distance, simulation_frames, Gui):
         """
         argumentos:
@@ -27,8 +27,8 @@ class UR5_EnvTest():
             self.viewer = mujoco_py.MjViewer(self.sim)
 
 
-        # configurar actuadores
-        self.init_qpos = [0,1,0,1,1,0] #testing
+        #configurar actuadores
+        self.init_qpos = [0,1,0,1,1,0]
         self.init_qvel = [0,0,0,0,0,0]
         self.num_actuators = len(self.sim.data.ctrl)
 
@@ -37,11 +37,10 @@ class UR5_EnvTest():
 
 
         #configurar el target
-        self.target_position = self.sim.data.get_geom_xpos("target")
-        self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1)))
+        self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
 
 
-        # self.seed()
+        self.seed()
         self.reset()
 
     def reset(self):
@@ -67,16 +66,16 @@ class UR5_EnvTest():
 
 
         #generar el sistema de recompenza
-        # TODO: hacer sistema de recompenza
 
-        #crear las acciones posibles del agente
+
+        #ejecutar accion del agente
         for i in range(self.num_actuators):
             controller[i] = 1
 
 
         # aplicar control en paso de simulación
         # estos pasos son distintos de los pasos del agente
-        # los simulation frames son los pasos que el agente evita computar
+        # los simulation frames son los pasos de simulación utilizando un controlador
         self.sim.data.ctrl[:] = controller
         for _ in range(self.simulation_frames):
             self.sim.step()
@@ -125,6 +124,3 @@ class UR5_EnvTest():
         self.sim.model.geom_pos[:] = geom_positions
 
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
