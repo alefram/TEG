@@ -2,7 +2,7 @@ import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
-env = UR5_EnvTest(100,50,True)
+env = UR5_EnvTest(simulation_frames=10,Gui=True)
 
 
 for i_episode in range(20):
@@ -16,7 +16,7 @@ for i_episode in range(20):
 
         action = env.action_space.sample()
         print("Action del agente",action)
-        observation, reward, done = env.step(action)
+        observation, reward, done, info = env.step(action)
         print("observación", observation)
 
         if done:
