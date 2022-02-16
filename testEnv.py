@@ -14,7 +14,8 @@ for i_episode in range(20):
 
         env.render()
 
-        action = 1
+        action = env.action_space.sample()
+        print("Action del agente",action)
         observation, reward, done = env.step(action)
         print("observación", observation)
 
