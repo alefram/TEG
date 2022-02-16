@@ -168,7 +168,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                                         contype="0"
                                         conaffinity="0"
                                     />
-                                    <joint name="joint6" pos="0 0 0" axis="1 0 0"/>
+                                    <joint name="joint6" pos="0 0 0" axis="0 1 0"/>
 
                                     <!-- efector final -->
                                     <include file="efector.xml"/>
