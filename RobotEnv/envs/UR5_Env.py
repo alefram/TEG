@@ -97,13 +97,15 @@ class UR5_EnvTest(gym.Env):
         '''
             Esta función retorna la posicion y velocidad de las articulaciones
         '''
-        #TODO: agregar la posicion en xyz de la garra
-        
-        joints = np.concatenate(
-            [self.sim.data.qpos.flat[:], self.sim.data.qvel.flat[:]]
+        gripper_position = self.sim.data.get_body_xpos('ee_link')
+        joints_position = self.sim.data.qpos.flat.copy()
+        joints_velocity = self.sim.data.qvel.flat.copy()
+
+        observation = np.concatenate(
+            (gripper_position, joints_position, joints_velocity)
         )
 
-        return joints
+        return observation
 
 
     def reset_target(self):
