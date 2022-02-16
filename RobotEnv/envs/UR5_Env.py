@@ -6,7 +6,7 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self, rewarded_distance, simulation_frames, Gui):
+    def __init__(self, simulation_frames, Gui):
         """
         argumentos:
             rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
@@ -14,7 +14,6 @@ class UR5_EnvTest(gym.Env):
         """
 
         #inicializar configuraciones de la simulacion
-        self.rewarded_distance = rewarded_distance
         self.acumulative_reward = 0
         self.Gui = Gui
         self.simulation_frames = simulation_frames
@@ -37,10 +36,12 @@ class UR5_EnvTest(gym.Env):
         bounds = self.robot.actuator_ctrlrange.copy().astype(np.float32)
         low, high = bounds.T
         self.action_space = spaces.Box(low=low, high=high,dtype=np.float32)
-        print(self.action_space)
         
 
         #configurar el target
+        
+        #TODO: correguir que la posicion del target no pueda ser cerca o en la posicion donde esta el robot
+        
         self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
 
 
@@ -66,31 +67,20 @@ class UR5_EnvTest(gym.Env):
         #inicializar variables
         done = False
         reward = 0
-        controller = np.copy(self.sim.data.ctrl)
 
-
-        #generar el sistema de recompenza
-
-
-        #ejecutar accion del agente
-        for i in range(self.num_actuators):
-            controller[i] = 1
+        #TODO: generar el sistema de recompenza
 
 
         # aplicar control en paso de simulación
         # estos pasos son distintos de los pasos del agente
         # los simulation frames son los pasos de simulación utilizando un controlador
-        self.sim.data.ctrl[:] = controller
-        for _ in range(self.simulation_frames):
-            self.sim.step()
+        self.do_simulation(action,self.simulation_frames)
+        
 
+        #TODO: agregar info
+        info = {}
 
-        # incrementar la recompenza a largo plazo
-        self.acumulative_reward += 1
-
-
-
-        return self.observations(), reward, done
+        return self.observations(), reward, done, info
 
 
     def render(self, camera=None):
@@ -104,10 +94,11 @@ class UR5_EnvTest(gym.Env):
     ##### funciones utiles ######
 
     def observations(self):
-        """
-        Esta función retorna la posicion y velocidad de las articulaciones
-        """
-
+        '''
+            Esta función retorna la posicion y velocidad de las articulaciones
+        '''
+        #TODO: agregar la posicion en xyz de la garra
+        
         joints = np.concatenate(
             [self.sim.data.qpos.flat[:], self.sim.data.qvel.flat[:]]
         )
@@ -127,4 +118,14 @@ class UR5_EnvTest(gym.Env):
         geom_positions[1] = self.goal
         self.sim.model.geom_pos[:] = geom_positions
 
-
+    def do_simulation(self, ctrl, n_frames):
+        '''
+            aplicar el controlador a la simulación
+        '''
+        
+        if np.array(ctrl).shape != self.action_space.shape:
+            raise ValueError("dimesion  de las acción no concuerda con el controlador")
+        
+        self.sim.data.ctrl[:] = ctrl
+        for _ in range(n_frames):
+            self.sim.step()
