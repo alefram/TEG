@@ -34,7 +34,11 @@ class UR5_EnvTest(gym.Env):
 
 
         #configurar los espacio de acción
-
+        bounds = self.robot.actuator_ctrlrange.copy().astype(np.float32)
+        low, high = bounds.T
+        self.action_space = spaces.Box(low=low, high=high,dtype=np.float32)
+        print(self.action_space)
+        
 
         #configurar el target
         self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
