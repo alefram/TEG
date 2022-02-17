@@ -39,9 +39,10 @@ class UR5_EnvTest(gym.Env):
         
 
         #configurar el target
+        geom_positions = self.sim.model.geom_pos.copy()
+        self.target_position = geom_positions[1] #posicion del target
         
-        #TODO: correguir que la posicion del target no pueda ser cerca o en la posicion donde esta el robot
-        
+        #TODO: mejorar las limitaciones del target a el espacio de un cubo de tamaño x dentro del espacio de trabajo del brazo
         self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
 
 
@@ -68,7 +69,7 @@ class UR5_EnvTest(gym.Env):
         done = False
         reward = 0
 
-        #TODO: generar el sistema de recompenza
+        #TODO: generar el sistema de recompenza basado en el articulo
 
 
         # aplicar control en paso de simulación
