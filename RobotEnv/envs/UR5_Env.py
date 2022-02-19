@@ -6,7 +6,7 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self, simulation_frames, Gui):
+    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
         """
         argumentos:
             rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
@@ -17,6 +17,8 @@ class UR5_EnvTest(gym.Env):
         self.acumulative_reward = 0
         self.Gui = Gui
         self.simulation_frames = simulation_frames
+        self.C_a = torque_control
+        self.distance_threshold = distance_threshold
 
         #inicializar el modelo del robot
         self.robot = mujoco_py.load_model_from_path('RobotEnv/assets/UR5/robotModelV2.xml')
@@ -27,7 +29,7 @@ class UR5_EnvTest(gym.Env):
 
 
         #configurar actuadores
-        self.init_qpos = [0,1,0,1,1,0]
+        self.init_qpos = [1, 1.8, 1.8 ,0.3,0.7,0.5]
         self.init_qvel = [0,0,0,0,0,0]
         self.num_actuators = len(self.sim.data.ctrl)
 
@@ -60,7 +62,7 @@ class UR5_EnvTest(gym.Env):
 
         self.sim.forward()
 
-        return self.observations()
+        return self.get_observation()
 
 
     def step(self, action):
@@ -68,20 +70,31 @@ class UR5_EnvTest(gym.Env):
         #inicializar variables
         done = False
         reward = 0
-
-        #TODO: generar el sistema de recompenza basado en el articulo
-
+        action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera 
 
         # aplicar control en paso de simulación
         # estos pasos son distintos de los pasos del agente
         # los simulation frames son los pasos de simulación utilizando un controlador
         self.do_simulation(action,self.simulation_frames)
         
+        # obtendo la observacion o el siguiente estado
+        observation = self.get_observation()
 
-        #TODO: agregar info
-        info = {}
+        # obtengo la recompenza
+        reward = self.compute_reward(observation, action)
+        
+        # verifico si la garra choca con el piso o recompenza -100 termina el episodio
+        if (reward == -100):
+            done = True
+        
+        # verifico que la garra este al menos de 5cm dando recompenza 1 y terminar el episodio
+        # aqui se considera la lograda y terminada
+        if (reward == 1):
+            done = True
+        
+        info = self.get_info(observation)
 
-        return self.observations(), reward, done, info
+        return observation, reward, done, info
 
 
     def render(self, camera=None):
@@ -94,7 +107,7 @@ class UR5_EnvTest(gym.Env):
 
     ##### funciones utiles ######
 
-    def observations(self):
+    def get_observation(self):
         '''
             Esta función retorna la posicion y velocidad de las articulaciones
         '''
@@ -132,3 +145,31 @@ class UR5_EnvTest(gym.Env):
         self.sim.data.ctrl[:] = ctrl
         for _ in range(n_frames):
             self.sim.step()
+
+    def compute_reward(self, state, action):
+        gripper_position = np.array([state[0], state[1], state[2]])
+        target_position = self.target_position
+
+
+        distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
+        action_norm = np.linalg.norm(action)
+    
+        if (gripper_position[2] <= 0.5):
+            return -100
+
+        if (distance_norm < self.distance_threshold):
+            return 1
+
+        return (-distance_norm - self.C_a * action_norm).astype(np.float32)
+
+    def get_info(self, observation):
+        gripper_position = self.sim.data.get_body_xpos('ee_link')
+
+        info = {
+            'gripper_position': self.sim.data.get_body_xpos('ee_link'),
+            'j_position': self.sim.data.qpos.flat.copy().astype(np.float32),
+            'j_velocity': self.sim.data.qvel.flat.copy().astype(np.float32),
+            'dist': np.linalg.norm(self.target_position - gripper_position).astype(np.float32)
+        }
+
+        return info
