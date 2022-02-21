@@ -6,7 +6,7 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self, robot_model, simulation_frames, torque_control, distance_threshold, Gui):
+    def __init__(self, model, simulation_frames, torque_control, distance_threshold, Gui):
         """
         argumentos:
             rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
@@ -19,7 +19,7 @@ class UR5_EnvTest(gym.Env):
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
-        self.robot_model = robot_model
+        self.robot_model = model
 
         #inicializar el modelo del robot
         self.robot = mujoco_py.load_model_from_path(robot_model)
