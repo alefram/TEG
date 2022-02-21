@@ -6,7 +6,7 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui, model):
+    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
         """
         argumentos:
             rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
@@ -19,10 +19,17 @@ class UR5_EnvTest(gym.Env):
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
-        self.robot_model = model
+        
+
 
         #inicializar el modelo del robot
-        self.robot = mujoco_py.load_model_from_path(robot_model)
+        model_path = "robotModelV2.xml"
+        fullpath = os.path.join(
+            os.path.dirname(__file__), "../assets/UR5", model_path)
+        if not os.path.exists(fullpath):
+            raise IOError("File %s does not exist" % fullpath)
+
+        self.robot = mujoco_py.load_model_from_path(fullpath)
         self.sim = mujoco_py.MjSim(self.robot)
 
         if self.Gui:

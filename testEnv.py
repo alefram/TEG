@@ -3,9 +3,8 @@ from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
 
-ROBOT_MODEL = 'RobotEnv/assets/UR5/robotModelV2.xml'
 
-env = UR5_EnvTest( ROBOT_MODEL, simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
+env = UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
 
 
 for i_episode in range(20):
