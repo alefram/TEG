@@ -6,7 +6,7 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self,robot_model, simulation_frames, torque_control, distance_threshold, Gui):
+    def __init__(self, robot_model, simulation_frames, torque_control, distance_threshold, Gui):
         """
         argumentos:
             rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
