@@ -2,7 +2,10 @@ import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
-env = UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
+
+ROBOT_MODEL = 'RobotEnv/assets/UR5/robotModelV2.xml'
+
+env = UR5_EnvTest( ROBOT_MODEL, simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
 
 
 for i_episode in range(20):
@@ -23,6 +26,7 @@ for i_episode in range(20):
         print('posicion de las articulaciones:', info['j_position'])
         print('velocidad de las articulaciones:', info['j_velocity'])
         print('distancia a la meta:', info['dist'])
+        print('recompens:', reward)
         print('---------------------------------')
 
         if done:
