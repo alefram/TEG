@@ -14,14 +14,11 @@ class UR5_EnvTest(gym.Env):
         """
 
         #inicializar configuraciones de la simulacion
-        self.acumulative_reward = 0
         self.Gui = Gui
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
         
-
-
         #inicializar el modelo del robot
         model_path = "robotModelV2.xml"
         fullpath = os.path.join(
