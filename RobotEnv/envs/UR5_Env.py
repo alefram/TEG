@@ -75,7 +75,7 @@ class UR5_EnvTest(gym.Env):
         self.target_position = geom_positions[1] #posicion del target
 
         #TODO: mejorar las limitaciones del target a el espacio de un cubo de tamaño x dentro del espacio de trabajo del brazo
-        self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
+        self.target_bounds = np.array(((-0.3, 0.3), (-0.3, 0.3), (0.45, 1))) #limites del target a alcanzar
 
 
         self.seed()
