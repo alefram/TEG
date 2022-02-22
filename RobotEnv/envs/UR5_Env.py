@@ -5,6 +5,27 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
+def convert_observation_to_space(observation):
+    if isinstance(observation, dict):
+        space = spaces.Dict(
+            OrderedDict(
+                [
+                    (key, convert_observation_to_space(value))
+                    for key, value in observation.items()
+                ]
+            )
+        )
+    elif isinstance(observation, np.ndarray):
+        low = np.full(observation.shape, -float("inf"), dtype=np.float32)
+        high = np.full(observation.shape, float("inf"), dtype=np.float32)
+        space = spaces.Box(low, high, dtype=observation.dtype)
+    else:
+        raise NotImplementedError(type(observation), observation)
+
+    return space
+
+
+
 class UR5_EnvTest(gym.Env):
     def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
         """
@@ -18,7 +39,7 @@ class UR5_EnvTest(gym.Env):
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
-        
+
         #inicializar el modelo del robot
         model_path = "robotModelV2.xml"
         fullpath = os.path.join(
@@ -43,12 +64,16 @@ class UR5_EnvTest(gym.Env):
         bounds = self.robot.actuator_ctrlrange.copy().astype(np.float32)
         low, high = bounds.T
         self.action_space = spaces.Box(low=low, high=high,dtype=np.float32)
-        
+
+        #configurar espacio observado
+        observation = self.get_observation()
+
+        self.observation_space = convert_observation_to_space(observation)
 
         #configurar el target
         geom_positions = self.sim.model.geom_pos.copy()
         self.target_position = geom_positions[1] #posicion del target
-        
+
         #TODO: mejorar las limitaciones del target a el espacio de un cubo de tamaño x dentro del espacio de trabajo del brazo
         self.target_bounds = np.array(((-0.5, 0.5), (-0.5, 0.5), (0.45, 1))) #limites del target a alcanzar
 
@@ -75,28 +100,28 @@ class UR5_EnvTest(gym.Env):
         #inicializar variables
         done = False
         reward = 0
-        action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera 
+        action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera
 
         # aplicar control en paso de simulación
         # estos pasos son distintos de los pasos del agente
         # los simulation frames son los pasos de simulación utilizando un controlador
         self.do_simulation(action,self.simulation_frames)
-        
+
         # obtendo la observacion o el siguiente estado
         observation = self.get_observation()
 
         # obtengo la recompenza
         reward = self.compute_reward(observation, action)
-        
+
         # verifico si la garra choca con el piso o recompenza -100 termina el episodio
         if (reward == -100):
             done = True
-        
+
         # verifico que la garra este al menos de 5cm dando recompenza 1 y terminar el episodio
         # aqui se considera la lograda y terminada
         if (reward == 1):
             done = True
-        
+
         info = self.get_info(observation)
 
         return observation, reward, done, info
@@ -143,10 +168,10 @@ class UR5_EnvTest(gym.Env):
         '''
             aplicar el controlador a la simulación
         '''
-        
+
         if np.array(ctrl).shape != self.action_space.shape:
             raise ValueError("dimesion  de las acción no concuerda con el controlador")
-        
+
         self.sim.data.ctrl[:] = ctrl
         for _ in range(n_frames):
             self.sim.step()
@@ -158,7 +183,7 @@ class UR5_EnvTest(gym.Env):
 
         distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
         action_norm = np.linalg.norm(action)
-    
+
         if (gripper_position[2] <= 0.5):
             return -100
 
