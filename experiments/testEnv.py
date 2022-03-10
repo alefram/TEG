@@ -2,12 +2,13 @@ import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 import mujoco_py
 
-env = UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
 
+env = UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
 
 for i_episode in range(20):
     print("estoy en pisodio",i_episode)
     env.reset()
+
 
     for t in range(500):
         print("paso ", t)

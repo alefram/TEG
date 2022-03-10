@@ -27,12 +27,16 @@ def convert_observation_to_space(observation):
 
 
 class UR5_EnvTest(gym.Env):
-    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
-        """
-        argumentos:
-            rewarded_distance: distancia recompenzada cuando te acercas a la distancia target
+    """
+    ### argumentos iniciales:
 
-        """
+    1. simulation_frames: cantidad de pasos de simulación utilizando una acción del agente
+    2. torque_control: constante utilizada en el sistema de recompenza para controlar el torque
+    3. distance_threshold: distancia final que indica que la garra llego al objetivo
+    4. Gui: Booleano que indica si se permite visualización del brazo manipulador.
+
+    """
+    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
 
         #inicializar configuraciones de la simulacion
         self.Gui = Gui
@@ -58,7 +62,7 @@ class UR5_EnvTest(gym.Env):
         self.init_qpos = [1, 1.8, 1.8 ,0.3,0.7,0.5]
         self.init_qvel = [0,0,0,0,0,0]
         self.num_actuators = len(self.sim.data.ctrl)
-
+        self.qpos_bounds = np.array(((-1, 1), (0, 2), (0, 2), (0, 2), (0, 2), (-1, 1)), dtype=object) # rango de articulaciones
 
         #configurar los espacio de acción
         bounds = self.robot.actuator_ctrlrange.copy().astype(np.float32)
@@ -67,15 +71,12 @@ class UR5_EnvTest(gym.Env):
 
         #configurar espacio observado
         observation = self.get_observation()
-
         self.observation_space = convert_observation_to_space(observation)
 
         #configurar el target
         geom_positions = self.sim.model.geom_pos.copy()
         self.target_position = geom_positions[1] #posicion del target
-
-        #TODO: mejorar las limitaciones del target a el espacio de un cubo de tamaño x dentro del espacio de trabajo del brazo
-        self.target_bounds = np.array(((-0.3, 0.3), (-0.3, 0.3), (0.45, 1))) #limites del target a alcanzar
+        self.target_bounds = np.array(((-0.3, 0.3), (-0.3, 0.3), (0.45, 1)), dtype=object) #limites del target a alcanzar
 
 
         self.seed()
@@ -86,8 +87,12 @@ class UR5_EnvTest(gym.Env):
         #inicializar la posición de un objeto eleatorio para iniciar el episodio
         self.reset_target()
 
-        #inicializar las posiciones  y velocidades de las articulaciones
-        self.sim.data.qpos[:] = self.init_qpos
+        #resetear las posiciones de las articulaciones de manera aleatoria y velocidad cero
+        qpos = np.random.rand(6) * (self.qpos_bounds[:, 1] -
+                                         self.qpos_bounds[:, 0]
+                                         ) + self.qpos_bounds[:, 0]
+
+        self.sim.data.qpos[:] = qpos
         self.sim.data.qvel[:] = self.init_qvel
 
         self.sim.forward()
@@ -102,9 +107,7 @@ class UR5_EnvTest(gym.Env):
         reward = 0
         action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera
 
-        # aplicar control en paso de simulación
-        # estos pasos son distintos de los pasos del agente
-        # los simulation frames son los pasos de simulación utilizando un controlador
+        # aplicar  control  a la simulación
         self.do_simulation(action,self.simulation_frames)
 
         # obtendo la observacion o el siguiente estado
@@ -113,11 +116,11 @@ class UR5_EnvTest(gym.Env):
         # obtengo la recompenza
         reward = self.compute_reward(observation, action)
 
-        # verifico si la garra choca con el piso o recompenza -100 termina el episodio
+        # verifico si la garra choca con el piso o recompensa -100 termina el episodio
         if (reward == -100):
             done = True
 
-        # verifico que la garra este al menos de 5cm dando recompenza 1 y terminar el episodio
+        # verifico que la garra este al menos de 5cm dando recompensa 1 y terminar el episodio
         # aqui se considera la lograda y terminada
         if (reward == 1):
             done = True
@@ -138,9 +141,10 @@ class UR5_EnvTest(gym.Env):
     ##### funciones utiles ######
 
     def get_observation(self):
-        '''
-            Esta función retorna la posicion y velocidad de las articulaciones
-        '''
+        """
+            Esta función retorna la posicion y velocidad de las articulaciones y
+            la posición xyz de la garra.
+        """
         gripper_position = self.sim.data.get_body_xpos('ee_link')
         joints_position = self.sim.data.qpos.flat.copy()
         joints_velocity = self.sim.data.qvel.flat.copy()
@@ -153,7 +157,10 @@ class UR5_EnvTest(gym.Env):
 
 
     def reset_target(self):
-        # Randomize goal position within specified bounds
+        """
+        Esta función resetea para la posición del goal de manera aleatoria.
+        """
+        # crear una posición del goal aleatorio
         self.goal = np.random.rand(3) * (self.target_bounds[:, 1] -
                                          self.target_bounds[:, 0]
                                          ) + self.target_bounds[:, 0]
@@ -165,18 +172,24 @@ class UR5_EnvTest(gym.Env):
         self.sim.model.geom_pos[:] = geom_positions
 
     def do_simulation(self, ctrl, n_frames):
-        '''
-            aplicar el controlador a la simulación
-        '''
+        """
+        Esta función permite aplicar control en n cuadros de simulación
+        estos pasos son distintos de los pasos del agente
+        los simulation frames son los pasos de simulación utilizando un controlador
+
+        """
 
         if np.array(ctrl).shape != self.action_space.shape:
-            raise ValueError("dimesion  de las acción no concuerda con el controlador")
+            raise ValueError("dimensión  de las acción no concuerda con el controlador")
 
         self.sim.data.ctrl[:] = ctrl
         for _ in range(n_frames):
             self.sim.step()
 
     def compute_reward(self, state, action):
+        """
+        Esta función computa el sistema de recompensa.
+        """
         gripper_position = np.array([state[0], state[1], state[2]])
         target_position = self.target_position
 
@@ -193,6 +206,16 @@ class UR5_EnvTest(gym.Env):
         return (-distance_norm - self.C_a * action_norm).astype(np.float32)
 
     def get_info(self, observation):
+        """
+        Esta función permite obtener datos utiles.
+
+        ### descripción
+        - gripper_posicion: posición xyz del efector final.
+        - j_posicion: posición de  las articulaciones
+        - j_velocity: velocidad de las articulaciones
+        - dist: distancia entre el efector final y el goal
+
+        """
         gripper_position = self.sim.data.get_body_xpos('ee_link')
 
         info = {

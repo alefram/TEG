@@ -6,7 +6,6 @@ import gym
 from torch.distributions.normal import Normal
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 
-
 #perceptron multicapa MPL
 def mlp(sizes, activation, output_activation=nn.Identity):
     layers = []
