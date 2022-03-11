@@ -92,7 +92,7 @@ class UR5_EnvTest(gym.Env):
                                          self.qpos_bounds[:, 0]
                                          ) + self.qpos_bounds[:, 0]
 
-        self.sim.data.qpos[:] = qpos
+        self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
 
         self.sim.forward()

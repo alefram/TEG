@@ -5,7 +5,8 @@ import torch
 
 
 env = UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=True)
-ac =  torch.load("/home/alexis/Documentos/repos/TEG/data_exp1/pyt_save/model.pt")
+ac =  torch.load("/home/alexis/Documentos/repos/TEG/data_exp2/pyt_save/model.pt")
+
 
 for i_episode in range(20):
     print("estoy en pisodio",i_episode)
@@ -22,6 +23,7 @@ for i_episode in range(20):
 
         print("Action del agente",action)
         observation, reward, done, info = env.step(action)
+
         print('-----------------')
         print('observacion')
         print('posicion de la garra:',info['gripper_position'])
