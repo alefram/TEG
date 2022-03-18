@@ -10,7 +10,7 @@ if __name__ == '__main__':
     # entrenar
     env = lambda: UR5_EnvTest(simulation_frames=10, torque_control= 0.01, distance_threshold=0.5, Gui=False)
 
-    logger_kwargs = dict(output_dir='data_exp2', exp_name='robot_train2')
+    logger_kwargs = dict(output_dir='agents/vpg/', exp_name='robot_train2')
 
     vpg(env, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
         steps_per_epoch=4000, epochs=1000, gamma=0.99, pi_lr=3e-4,

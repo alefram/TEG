@@ -23,7 +23,7 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     <!-- configuracion del compilador -->
     <compiler inertiafromgeom='true' angle='radian' meshdir="meshes/V2"/>
-    <option  timestep="0.02" gravity="0 0 0"/>
+    <option  timestep="0.002" gravity="0 0 0"/>
 
     <!-- valores por defecto para la simulación -->
     <default>
@@ -195,12 +195,12 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     <!-- actuadores -->
     <actuator>
-        <velocity name="joint1_velocity" joint="joint1" ctrlrange="-1 1"/>
+        <!-- <velocity name="joint1_velocity" joint="joint1" ctrlrange="-1 1"/>
         <velocity name="joint2_velocity" joint="joint2" ctrlrange="-1 1"/>
         <velocity name="joint3_velocity" joint="joint3" ctrlrange="-1 1"/>
         <velocity name="joint4_velocity" joint="joint4" ctrlrange="-1 1"/>
         <velocity name="joint5_velocity" joint="joint5" ctrlrange="-1 1"/>
-        <velocity name="joint6_velocity" joint="joint6" ctrlrange="-1 1"/>
+        <velocity name="joint6_velocity" joint="joint6" ctrlrange="-1 1"/> -->
 
         <!-- <position name="joint1_position" joint="joint1"/>
         <position name="joint2_position" joint="joint2"/>
@@ -209,11 +209,11 @@ Simulador Mujoco ::Advanced physics simulation engine
         <position name="joint5_position" joint="joint5"/>
         <position name="joint6_position" joint="joint6"/> -->
 
-        <!-- <motor name="joint1_motor" joint="joint1"/>
-        <motor name="joint2_motor" joint="joint2"/>
-        <motor name="joint3_motor" joint="joint3"/>
-        <motor name="joint4_motor" joint="joint4"/>
-        <motor name="joint5_motor" joint="joint5"/>
-        <motor name="joint6_motor" joint="joint6"/> -->
+        <motor name="joint1_motor" joint="joint1" gear="100" ctrlrange="-3.141 3.141"/>
+        <motor name="joint2_motor" joint="joint2" gear="5" ctrlrange="0 3.141"/>
+        <motor name="joint3_motor" joint="joint3" gear="5" ctrlrange="-3.141 3.141"/>
+        <motor name="joint4_motor" joint="joint4" gear="2" ctrlrange="-3.141 3.141 "/>
+        <motor name="joint5_motor" joint="joint5" gear="2" ctrlrange="-3.141 3.141"/>
+        <motor name="joint6_motor" joint="joint6" gear="5" ctrlrange="-3.141 3.141"/>
 	</actuator>
 </mujoco>

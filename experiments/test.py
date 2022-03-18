@@ -1,7 +1,7 @@
 import mujoco_py
 import argparse
 import numpy as np
-
+import torch
 #indicaciones para ingresar por el usuario
 parser = argparse.ArgumentParser(description="UR5")
 parser.add_argument(dest='modelo', type=str, default="robotModel.xml", help="robot a utilizar")
@@ -14,6 +14,9 @@ viewer = mujoco_py.MjViewer(sim)
 
 t = 0 #paso de tiempo
 
+ac =  torch.load("/home/alexis/Documentos/repos/TEG/agents/ddpg1/pyt_save/model.pt")
+
+
 sim_state = sim.get_state()
 
 while True:
@@ -22,11 +25,13 @@ while True:
     sim.set_state(sim_state)
 
 
-    for  i in  range(1000):
+    for  i in  range(100000):
         if i < 150:
             sim.data.ctrl[:] = 0.0
         else:
-            sim.data.ctrl[:] = 1.0
+            # action = ac.act(torch.as_tensor(sim_state, dtype=torch.float3)) # agente vpg
+
+            sim.data.ctrl[:] = 1
 
 
         sim.step()

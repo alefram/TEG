@@ -5,6 +5,12 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
+#TODO: agregar a la observación la posición del target
+#TODO: ajustar valores en float32 y crear vector de espacio de el target
+#TODO: checkiar todo los parametros
+#TODO: ajustar modelo robotModelV2.xml compararlo con con los otros ejemplos y checkiar definiciones en la documentación de mujoco
+
+
 def convert_observation_to_space(observation):
     if isinstance(observation, dict):
         space = spaces.Dict(
@@ -59,7 +65,7 @@ class UR5_EnvTest(gym.Env):
 
 
         #configurar actuadores
-        self.init_qpos = [1, 1.8, 1.8 ,0.3,0.7,0.5]
+        self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
         self.init_qvel = [0,0,0,0,0,0]
         self.num_actuators = len(self.sim.data.ctrl)
         self.qpos_bounds = np.array(((-1, 1), (0, 2), (0, 2), (0, 2), (0, 2), (-1, 1)), dtype=object) # rango de articulaciones
@@ -76,7 +82,7 @@ class UR5_EnvTest(gym.Env):
         #configurar el target
         geom_positions = self.sim.model.geom_pos.copy()
         self.target_position = geom_positions[1] #posicion del target
-        self.target_bounds = np.array(((-0.3, 0.3), (-0.3, 0.3), (0.45, 1)), dtype=object) #limites del target a alcanzar
+        self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
 
 
         self.seed()
@@ -89,8 +95,8 @@ class UR5_EnvTest(gym.Env):
 
         #resetear las posiciones de las articulaciones de manera aleatoria y velocidad cero
         qpos = np.random.rand(6) * (self.qpos_bounds[:, 1] -
-                                         self.qpos_bounds[:, 0]
-                                         ) + self.qpos_bounds[:, 0]
+                                    self.qpos_bounds[:, 0]
+                                    ) + self.qpos_bounds[:, 0]
 
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
@@ -116,13 +122,9 @@ class UR5_EnvTest(gym.Env):
         # obtengo la recompenza
         reward = self.compute_reward(observation, action)
 
-        # verifico si la garra choca con el piso o recompensa -100 termina el episodio
-        if (reward == -100):
-            done = True
-
         # verifico que la garra este al menos de 5cm dando recompensa 1 y terminar el episodio
         # aqui se considera la lograda y terminada
-        if (reward == 1):
+        if (reward === 1):
             done = True
 
         info = self.get_info(observation)
@@ -183,6 +185,8 @@ class UR5_EnvTest(gym.Env):
             raise ValueError("dimensión  de las acción no concuerda con el controlador")
 
         self.sim.data.ctrl[:] = ctrl
+
+        #este es el frame skip que
         for _ in range(n_frames):
             self.sim.step()
 
@@ -195,10 +199,7 @@ class UR5_EnvTest(gym.Env):
 
 
         distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
-        action_norm = np.linalg.norm(action)
-
-        if (gripper_position[2] <= 0.5):
-            return -100
+        action_norm = np.linalg.norm(action).astype(np.float32)
 
         if (distance_norm < self.distance_threshold):
             return 1
