@@ -7,17 +7,17 @@ from spinup import ddpg_pytorch as ddpg
 import spinup.algos.pytorch.ddpg.core as core
 import torch.nn as nn
 
-
+pytere
 if __name__ == '__main__':
     # entrenar
     env = lambda: UR5_EnvTest(simulation_frames=4, torque_control= 0.01, distance_threshold=0.05, Gui=False)
 
-    logger_kwargs = dict(output_dir='agents/ddpg1', exp_name='robot_train2')
+    logger_kwargs = dict(output_dir='agents/ddpg3', exp_name='robot_train2')
     ac_kwargs = dict(hidden_sizes=[400,300], activation=nn.ReLU)
 
 
     ddpg(env, actor_critic=core.MLPActorCritic, ac_kwargs=ac_kwargs, seed=0,
-        steps_per_epoch=4000, epochs=500, replay_size=1000000, gamma=0.99,
+        steps_per_epoch=4000, epochs=150, replay_size=1000000, gamma=0.99,
         polyak=0.995, pi_lr=0.001, q_lr=0.001, batch_size=100, start_steps=10000,
         update_after=1000, update_every=50, act_noise=0.1, num_test_episodes=10,
-        max_ep_len=4000, logger_kwargs=logger_kwargs, save_freq=1)
+        max_ep_len=500, logger_kwargs=logger_kwargs, save_freq=1)

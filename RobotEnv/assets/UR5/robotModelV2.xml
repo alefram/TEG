@@ -209,11 +209,11 @@ Simulador Mujoco ::Advanced physics simulation engine
         <position name="joint5_position" joint="joint5"/>
         <position name="joint6_position" joint="joint6"/> -->
 
-        <motor name="joint1_motor" joint="joint1" gear="100" ctrlrange="-3.141 3.141"/>
-        <motor name="joint2_motor" joint="joint2" gear="5" ctrlrange="0 3.141"/>
-        <motor name="joint3_motor" joint="joint3" gear="5" ctrlrange="-3.141 3.141"/>
-        <motor name="joint4_motor" joint="joint4" gear="2" ctrlrange="-3.141 3.141 "/>
-        <motor name="joint5_motor" joint="joint5" gear="2" ctrlrange="-3.141 3.141"/>
-        <motor name="joint6_motor" joint="joint6" gear="5" ctrlrange="-3.141 3.141"/>
+        <motor name="joint1_motor" joint="joint1" ctrllimited="true" gear="100" ctrlrange="-3.141 3.141"/>
+        <motor name="joint2_motor" joint="joint2" ctrllimited="true" gear="5" ctrlrange="0 3.141"/>
+        <motor name="joint3_motor" joint="joint3" ctrllimited="true" gear="5" ctrlrange="-3.141 3.141"/>
+        <motor name="joint4_motor" joint="joint4" ctrllimited="true" gear="2" ctrlrange="-3.141 3.141 "/>
+        <motor name="joint5_motor" joint="joint5" ctrllimited="true" gear="2" ctrlrange="-3.141 3.141"/>
+        <motor name="joint6_motor" joint="joint6" ctrllimited="true" gear="5" ctrlrange="-3.141 3.141"/>
 	</actuator>
 </mujoco>

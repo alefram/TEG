@@ -5,10 +5,6 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 
-#TODO: agregar a la observación la posición del target
-#TODO: ajustar valores en float32 y crear vector de espacio de el target
-#TODO: checkiar todo los parametros
-#TODO: ajustar modelo robotModelV2.xml compararlo con con los otros ejemplos y checkiar definiciones en la documentación de mujoco
 
 
 def convert_observation_to_space(observation):
@@ -80,8 +76,6 @@ class UR5_EnvTest(gym.Env):
         self.observation_space = convert_observation_to_space(observation)
 
         #configurar el target
-        geom_positions = self.sim.model.geom_pos.copy()
-        self.target_position = geom_positions[1] #posicion del target
         self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
 
 
@@ -94,9 +88,9 @@ class UR5_EnvTest(gym.Env):
         self.reset_target()
 
         #resetear las posiciones de las articulaciones de manera aleatoria y velocidad cero
-        qpos = np.random.rand(6) * (self.qpos_bounds[:, 1] -
-                                    self.qpos_bounds[:, 0]
-                                    ) + self.qpos_bounds[:, 0]
+        # qpos = np.random.rand(6) * (self.qpos_bounds[:, 1] -
+        #                             self.qpos_bounds[:, 0]
+        #                             ) + self.qpos_bounds[:, 0]
 
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
@@ -124,7 +118,7 @@ class UR5_EnvTest(gym.Env):
 
         # verifico que la garra este al menos de 5cm dando recompensa 1 y terminar el episodio
         # aqui se considera la lograda y terminada
-        if (reward === 1):
+        if (reward == 1):
             done = True
 
         info = self.get_info(observation)
@@ -147,12 +141,13 @@ class UR5_EnvTest(gym.Env):
             Esta función retorna la posicion y velocidad de las articulaciones y
             la posición xyz de la garra.
         """
-        gripper_position = self.sim.data.get_body_xpos('ee_link')
-        joints_position = self.sim.data.qpos.flat.copy()
-        joints_velocity = self.sim.data.qvel.flat.copy()
+        gripper_position = self.sim.data.get_body_xpos('left_inner_finger').astype(np.float32)
+        target_position = self.sim.data.get_geom_xpos("target")
+        joints_position = self.sim.data.qpos.flat.copy().astype(np.float32)
+        joints_velocity = self.sim.data.qvel.flat.copy().astype(np.float32)
 
         observation = np.concatenate(
-            (gripper_position, joints_position, joints_velocity)
+            (gripper_position, target_position, joints_position, joints_velocity)
         )
 
         return observation
@@ -195,10 +190,11 @@ class UR5_EnvTest(gym.Env):
         Esta función computa el sistema de recompensa.
         """
         gripper_position = np.array([state[0], state[1], state[2]])
-        target_position = self.target_position
+        target_position = self.goal.copy().astype(np.float32)
 
 
         distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
+
         action_norm = np.linalg.norm(action).astype(np.float32)
 
         if (distance_norm < self.distance_threshold):
@@ -212,18 +208,24 @@ class UR5_EnvTest(gym.Env):
 
         ### descripción
         - gripper_posicion: posición xyz del efector final.
+        - target position: posición objetivo
+
         - j_posicion: posición de  las articulaciones
         - j_velocity: velocidad de las articulaciones
         - dist: distancia entre el efector final y el goal
 
         """
-        gripper_position = self.sim.data.get_body_xpos('ee_link')
+        gripper_position = self.sim.data.get_body_xpos('ee_link').astype(np.float32)
+        target_position = self.sim.data.get_geom_xpos("target")
+
 
         info = {
-            'gripper_position': self.sim.data.get_body_xpos('ee_link'),
+            'gripper_position': gripper_position,
+            'target_position': target_position,
+            'dist': np.linalg.norm(target_position - gripper_position).astype(np.float32),
+            'observation': self.get_observation(),
             'j_position': self.sim.data.qpos.flat.copy().astype(np.float32),
             'j_velocity': self.sim.data.qvel.flat.copy().astype(np.float32),
-            'dist': np.linalg.norm(self.target_position - gripper_position).astype(np.float32)
         }
 
         return info
