@@ -23,17 +23,23 @@ parsers.add_argument('-z', '--z', required=True, help='z target position', type=
 
 args = vars(parsers.parse_args())
 
+#crear simulador
+def create_simulation(robot_path):
+    robot = mujoco_py.load_model_from_path("./RobotEnv/assets" + robot_path)
+    simulation = mujoco_py.MjSim(robot)
+
+    return simulation
 
 # crear clase controlador inteligente
 class Manipulator_Agent():
-    def __init__(self, model, robot, frames):
+    def __init__(self, model, simulation, frames):
 
-        self.robot = mujoco_py.load_model_from_path("./RobotEnv/assets" + robot)
-        self.sim = mujoco_py.MjSim(self.robot)
+        self.sim = simulation
+
         self.model = torch.load("./agents" + model)
         self.simulation_frames = frames
 
-        self.init_qpos = [-0.1, 0, 1 ,0.3, 0, 0]
+        self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
         self.init_qvel = [0,0,0,0,0,0]
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
@@ -70,39 +76,35 @@ class Manipulator_Agent():
         for _ in range(self.simulation_frames):
             self.sim.step()
 
-        print("target", self.sim.data.get_geom_xpos("target").astype(np.float32))
-        print("garra", self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32))
-        print(action)
-
-
-
 def main():
 
-    controller = Manipulator_Agent(args['model'], args['robot'], 4)
-    viewer = mujoco_py.MjViewer(controller.sim)
+    #crear la simulation
+    simulation = create_simulation(args['robot'])
 
+    # crear controlador
+    controller = Manipulator_Agent(args['model'], simulation, 4)
+
+    #crear ventana de visualización
+    viewer = mujoco_py.MjViewer(simulation)
+    #definir target
     target = np.array([args['x'], args['y'], args['z']])
-
 
     for t in range(10000):
 
         viewer.render()
-                
         controller.move_to(target)
 
-        if t == 500:
-            target = np.array([-0.1, -0.2, 0.5])
-            time.sleep(0.05)
-
-        if t == 1000:
-            target = np.array([-0.1, 0.2, 0.5])
-            time.sleep(0.05)
-
-        if t == 1500:
-            target = np.array([0.0, 0.0, 0.5])
-            time.sleep(0.05)
-
-
+        # if t == 500:
+        #     target = np.array([-0.1, -0.2, 0.5])
+        #     time.sleep(0.05)
+        #
+        # if t == 1000:
+        #     target = np.array([-0.1, 0.2, 0.5])
+        #     time.sleep(0.05)
+        #
+        # if t == 1500:
+        #     target = np.array([0.0, 0.0, 0.5])
+        #     time.sleep(0.05)
 
 if __name__ == '__main__':
     main()
