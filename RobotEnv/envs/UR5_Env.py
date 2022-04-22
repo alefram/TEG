@@ -6,7 +6,6 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 
-
 def convert_observation_to_space(observation):
     if isinstance(observation, dict):
         space = spaces.Dict(
