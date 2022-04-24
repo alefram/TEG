@@ -53,7 +53,7 @@ class PID():
             if (self.I < -self.overshoot_guard):
                 self.I = -self.overshoot_guard
             elif (self.I > self.overshoot_guard):
-                self.I = self.overshoot_guard
+                self.I = self.ove
 
             self.D = 0.0
 
@@ -147,4 +147,55 @@ class Manipulator_Agent():
 # controlador clasico
 class Mujoco_controller(object):
     """Controlador para un brazo manipulador usando mujoco y pid"""
+
+    def __init__(self, simulation=None, frames=None):
+
+        self.sim = simulation 
+        self.reached_target = False
+        self.q_current = np.zeros(len(self.sim.data.ctrl))
+        self.q_reference = []
+
+    #TODO: terminar cinematica inversa para obtener posiciones de los joints
+    def inverse_kinematics(self, target):
+        """cinematica inversa"""        
+
+        q_reference = []
+
+        assert target.size == 3
+
+        return q_reference
+    
+    def move_to(self, target): 
+        """mover la posición de la garra hacia el target"""
+
+        assert target.size == 3
+
+        # obtener posición del target y colocar en la simulacion
+        simulation_positions = self.sim.model.geom_pos.copy()
+        simulation_positions[1] = target
+        self.sim.model.geom_pos[:] = simulation_positions
+
+        # obtener el error
+        self.q_reference = self.inverse_kinematics(target)
+        self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
+
+        # aplicar pid
+        #TODO: hacer que funcione para varios joints
+        pid = PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=0.01)
+
+        pid.update(self.q_current[0])
+        action = pid.u_t
+
+        self.sim.data.ctrl[0] = action
+
+        for _ in range(self.simulation_frames):
+            self.sim.step()
+        
+        # verificar si la posición del target se alcanzó
+        if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
+            self.reached_target = True
+        
+        return self.reached_target
+
+
 

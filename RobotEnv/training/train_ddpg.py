@@ -1,5 +1,3 @@
-# crear actor y critico
-
 import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest #acuerdate de agregar TEG para colab
 from spinup import vpg_pytorch as vpg
@@ -7,13 +5,12 @@ from spinup import ddpg_pytorch as ddpg
 import spinup.algos.pytorch.ddpg.core as core
 import torch.nn as nn
 
-pytere
 if __name__ == '__main__':
     # entrenar
     env = lambda: UR5_EnvTest(simulation_frames=4, torque_control= 0.01, distance_threshold=0.05, Gui=False)
 
-    logger_kwargs = dict(output_dir='agents/ddpg3', exp_name='robot_train2')
-    ac_kwargs = dict(hidden_sizes=[400,300], activation=nn.ReLU)
+    logger_kwargs = dict(output_dir='agents/ddpg4', exp_name='robot_train2')
+    ac_kwargs = dict(hidden_sizes=[800,500], activation=nn.ReLU)
 
 
     ddpg(env, actor_critic=core.MLPActorCritic, ac_kwargs=ac_kwargs, seed=0,

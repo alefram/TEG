@@ -1,5 +1,3 @@
-# crear actor y critico
-
 import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest #acuerdate de agregar TEG para colab
 from spinup import vpg_pytorch as vpg
