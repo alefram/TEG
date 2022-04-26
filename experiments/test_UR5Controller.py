@@ -12,7 +12,7 @@ def main():
 
 
     # crear controlador
-    controller = Mujoco_controller(simulation)
+    controller = Mujoco_controller(simulation) 
     
 
     # mover la posicion de la garra

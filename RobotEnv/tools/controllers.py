@@ -16,7 +16,7 @@ class PID():
         self.sample_time = 0.0
         self.current_time = current_time if current_time is not None else time.time()
         self.last_time = self.current_time
-
+ 
         self.reset()
 
 
@@ -154,14 +154,26 @@ class Mujoco_controller(object):
         self.reached_target = False
         self.q_current = np.zeros(len(self.sim.data.ctrl))
         self.q_reference = []
+        self.create_control_list()
+
+
+    def create_control_list(self):
+        """crear lista de controladores"""
+
+        self.control_list = []
+
+        sample_time = 0.001
+
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #base 
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #shoulder
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #elbow
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist1
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist2
+        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist3        
 
     #TODO: terminar cinematica inversa para obtener posiciones de los joints
-    def inverse_kinematics(self, target):
-        """cinematica inversa"""        
-
-        q_reference = []
-
-        assert target.size == 3
+    def inverse_kinematics(self, target=None ):
+        """cinematica inversa"""
 
         return q_reference
     
@@ -179,14 +191,14 @@ class Mujoco_controller(object):
         self.q_reference = self.inverse_kinematics(target)
         self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
 
-        # aplicar pid
-        #TODO: hacer que funcione para varios joints
-        pid = PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=0.01)
+        # aplicar pids
+        pids = self.control_list
 
-        pid.update(self.q_current[0])
-        action = pid.u_t
+        for i in range(len(pids)):
+            pids[i].update(self.q_current[i])
 
-        self.sim.data.ctrl[0] = action
+            self.sim.data.ctrl[i] = pids[i].u_t
+            
 
         for _ in range(self.simulation_frames):
             self.sim.step()
