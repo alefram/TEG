@@ -5,6 +5,8 @@ Programa que permita mover una posicion de la garra utilizando un controlador co
 from RobotEnv.tools.controllers import Mujoco_controller
 from RobotEnv.tools.simulation import CreateSimulation
 
+CreateSimulation( )
+
 def main():
 
     # crear simulacion
@@ -12,8 +14,7 @@ def main():
 
 
     # crear controlador
-    controller = Mujoco_controller(simulation) 
-    
+    controller = Mujoco_controller(simulation)
 
     # mover la posicion de la garra
     controller.move_to(np.array([0.2, 1.8, 1.8]))
