@@ -14,6 +14,8 @@ import argparse
 import time
 from RobotEnv.tools.simulation import create_simulation
 from RobotEnv.tools.controllers import Manipulator_Agent
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 # agregar el agente de input
 parsers = argparse.ArgumentParser()
@@ -24,6 +26,7 @@ parsers.add_argument('-y', '--y', required=True, help='y target position', type=
 parsers.add_argument('-z', '--z', required=True, help='z target position', type=float)
 
 args = vars(parsers.parse_args())
+
 
 
 def main():
@@ -39,6 +42,7 @@ def main():
     
     #definir target
     target = np.array([args['x'], args['y'], args['z']])
+        
 
     for t in range(10000):
 
@@ -47,15 +51,22 @@ def main():
 
         if t == 500:
             target = np.array([-0.1, -0.2, 0.5])
-            time.sleep(0.05)
+            controller.stay(100)
         
         if t == 1000:
             target = np.array([-0.1, 0.2, 0.5])
-            time.sleep(0.05)
-        
+            controller.stay(100)
+
         if t == 1500:
             target = np.array([0.0, 0.0, 0.5])
-            time.sleep(0.05)
+            controller.stay(100)
+
+        if t == 2000:
+            target = np.array([-0.3, 0.0, 0.5])
+            controller.stay(100)
+
+        if t == 2500:
+            target = np.array([-0.4,0.0, 0.5])
 
 if __name__ == '__main__':
     main()

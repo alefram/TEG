@@ -2,6 +2,7 @@ import os
 import time
 import torch
 import numpy as np
+import mujoco_py
 
 #controlador  PID
 class PID():
@@ -100,7 +101,7 @@ class PID():
 
 # crear clase controlador inteligente
 class Manipulator_Agent():
-    def __init__(self, model, simulation, frames):
+    def __init__(self, model, simulation, frames, render):
 
         self.sim = simulation
 
@@ -111,6 +112,11 @@ class Manipulator_Agent():
         self.init_qvel = [0,0,0,0,0,0]
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
+
+        self.render = render
+
+        if self.render:        
+            self.viewer = mujoco_py.MjViewer(self.sim)
 
         self.sim.forward()
 
@@ -128,21 +134,38 @@ class Manipulator_Agent():
 
         return observation
 
-
-    def move_to(self, target):
+    def move_to(self, target, distance_threshold=0.05, stabilizer=0.01, timer=100):
         """mover la posición de la garra hacia el target"""
 
         assert target.size == 3
+
+        gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
+        distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
 
         simulation_positions = self.sim.model.geom_pos.copy()
         simulation_positions[1] = target
         self.sim.model.geom_pos[:] = simulation_positions
 
-        action = self.model.act(torch.as_tensor(self.observe(), dtype=torch.float32))
-        self.sim.data.ctrl[:] = action
+        for t in range(timer):
 
-        for _ in range(self.simulation_frames):
-            self.sim.step()
+            self.viewer.render()
+
+            action = self.model.act(torch.as_tensor(self.observe(), dtype=torch.float32))
+            self.sim.data.ctrl[:] = action
+
+            if (distance_norm < distance_threshold):
+                self.sim.data.ctrl[:] = stabilizer 
+
+                
+                for _ in range(self.simulation_frames):
+                    self.sim.step()
+
+                print('resuelto en:', t, "seg")
+                break
+
+            for _ in range(self.simulation_frames):
+                self.sim.step()
 
 # controlador clasico
 class Mujoco_controller(object):
@@ -170,90 +193,38 @@ class Mujoco_controller(object):
         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist1
         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist2
         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist3        
-
-    #TODO: terminar cinematica inversa para obtener posiciones de los joints
-    def inverse_kinematics(self, target_pos=None, target_quad=None, tol=1e-6, stop_steps=100):
-        """cinematica inversa"""
-
-        success = False
-
-        # paso 1 obtener posicion y la matriz de rotacion de el link base
-        base_pos = self.sim.data.get_body_xpos("base_link")        
-        base_quad = self.sim.data.get_body_xquat("base_link")
-
-        # paso 2 obtener la posicion del target_link
-        target_pos = self.sim.data.get_body_xpos("wrist_3_link")
-        target_quad = self.sim.data.get_body_xquat("wrist_3_link")
-
-        #paso 3 definir el vector q que tiene los angulos desde la base hasta el target
-        current_q = self.sim.data.qpos.flat.copy()
-
-
-        for steps in range(stop_steps):
             
-            #paso 4 calculate with foward kinematics with mujoco
+    # def move_to(self, target): 
+    #     """mover la posición de la garra hacia el target"""
+
+    #     assert target.size == 3
+
+    #     # obtener posición del target y colocar en la simulacion
+    #     simulation_positions = self.sim.model.geom_pos.copy()
+    #     simulation_positions[1] = target
+    #     self.sim.model.geom_pos[:] = simulation_positions
+
+    #     # obtener el error
+    #     self.q_reference = kinverse_kinematics(target, self.sim)
+    #     self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
+
+    #     # aplicar pids
+    #     pids = self.control_list
+
+    #     for i in range(len(pids)):
+    #         pids[i].update(self.q_current[i])
+
+    #         self.sim.data.ctrl[i] = pids[i].u_t
             
+
+    #     for _ in range(self.simulation_frames):
+    #         self.sim.step()
         
-
-            #step 5 calculate error in position and attitude
-            if target is not None:
-                delta_pos = target_pos - current_target_pos
-                delta_pos_norm += np.linalg.norm(delta_pos)
-            
-            if target_quad is not None:
-                #TODO: hacer error rotacional
-
-            
-            #paso 6 si es tolerable entonces terminar
-            if delta_pos < tol:
-                print("Convergio")
-                success = True
-                break
-
-            #paso 7 si no es tolerable entonces calcular delta_q 
-            else:
-                #TODO: calcular el delta_q
-
-
-            
-            
-            #paso 8 actualizar los angulos de los joints como q = q + delta_q
-            current_q = current_q + delta_q
-
-        return current_q, success
-
-            
-    def move_to(self, target): 
-        """mover la posición de la garra hacia el target"""
-
-        assert target.size == 3
-
-        # obtener posición del target y colocar en la simulacion
-        simulation_positions = self.sim.model.geom_pos.copy()
-        simulation_positions[1] = target
-        self.sim.model.geom_pos[:] = simulation_positions
-
-        # obtener el error
-        self.q_reference = self.inverse_kinematics(target)
-        self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
-
-        # aplicar pids
-        pids = self.control_list
-
-        for i in range(len(pids)):
-            pids[i].update(self.q_current[i])
-
-            self.sim.data.ctrl[i] = pids[i].u_t
-            
-
-        for _ in range(self.simulation_frames):
-            self.sim.step()
+    #     # verificar si la posición del target se alcanzó
+    #     if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
+    #         self.reached_target = True
         
-        # verificar si la posición del target se alcanzó
-        if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
-            self.reached_target = True
-        
-        return self.reached_target
+    #     return self.reached_target
 
 
 
