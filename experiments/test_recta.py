@@ -21,7 +21,7 @@ parsers.add_argument('-model', '--model', required=True, help='agente a usar')
 parsers.add_argument('-robot', '--robot', required=True, help='modelo del robot')   
 args = vars(parsers.parse_args())
 
-
+#TODO: ajustar simulación para medir en paso de tiempo del state de la simulación
 
 def main():
 
@@ -34,6 +34,7 @@ def main():
     # #crear ventana de visualización
     # viewer = mujoco_py.MjViewer(simulation)
     
+    #TODO: crear trayectorias de recta y circulo
     #vectores
     output = []
     output2 = []
@@ -49,42 +50,17 @@ def main():
     for episode in range(len(x)):
 
         controller.move_to(np.array([x[episode], y[episode], 0.5]), timer=100)
-
         output.append(simulation.data.get_body_xpos("left_inner_finger")[0].astype(np.float32))
         output2.append(simulation.data.get_body_xpos("left_inner_finger")[1].astype(np.float32))
         output3.append(simulation.data.ctrl[5])
         time_list.append(episode)
 
-
-
     logger = Logger()
 
-
-    x  = [1,2,4]
-    y = [1,2, 5]
-    
-    logger.plot_trajectory(time_list, output3, grid=True)
-
-    logger.plot_trajectory(x,y)
+    # logger.plot_trajectory(x,y)
+    logger.plot_error(time_list, error_a=y, error_b=output2)
 
     logger.show()
-
-    
-    # y = np.array(y)
-    # output2 = np.array(output2)
-
-    # error = np.subtract(y, output2)
-
-
-    # error = list(error)
-
-    # plt.plot(time_list, error)
-    # # plt.plot(output, ouput2)
-
-    # # plt.plot(x,y)
-    # # plt.plot(time_list, output3)
-
-
 
 if __name__ == '__main__':
     main()

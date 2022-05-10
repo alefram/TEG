@@ -86,11 +86,6 @@ class UR5_EnvTest(gym.Env):
         #inicializar la posición de un objeto eleatorio para iniciar el episodio
         self.reset_target()
 
-        #resetear las posiciones de las articulaciones de manera aleatoria y velocidad cero
-        # qpos = np.random.rand(6) * (self.qpos_bounds[:, 1] -
-        #                             self.qpos_bounds[:, 0]
-        #                             ) + self.qpos_bounds[:, 0]
-
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
 
@@ -140,7 +135,12 @@ class UR5_EnvTest(gym.Env):
             Esta función retorna la posicion y velocidad de las articulaciones y
             la posición xyz de la garra.
         """
-        gripper_position = self.sim.data.get_body_xpos('left_inner_finger').astype(np.float32)
+        left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float32)
+
+        gripper_position = ((left_finger[0] + right_finger[0])/2, (left_finger[1] + right_finger[1])/2, (left_finger[2] + right_finger[2])/2)
+
+        # gripper_position = self.sim.data.get_body_xpos('left_inner_finger').astype(np.float32)
         target_position = self.sim.data.get_geom_xpos("target")
         joints_position = self.sim.data.qpos.flat.copy().astype(np.float32)
         joints_velocity = self.sim.data.qvel.flat.copy().astype(np.float32)

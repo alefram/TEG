@@ -134,12 +134,16 @@ class Manipulator_Agent():
 
         return observation
 
+
+    #TODO: agregar retorno de data de la posicion del efector final y articulaciones y acciones de control.
     def move_to(self, target, distance_threshold=0.05, stabilizer=0.01, timer=100):
         """mover la posición de la garra hacia el target"""
 
         assert target.size == 3
+        left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float32)
 
-        gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        gripper_position = ((left_finger[0] + right_finger[0])/2, (left_finger[1] + right_finger[1])/2, (left_finger[2] + right_finger[2])/2)
         target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
         distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
 
