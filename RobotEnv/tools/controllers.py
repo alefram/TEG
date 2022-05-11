@@ -101,11 +101,15 @@ class PID():
 
 # crear clase controlador inteligente
 class Manipulator_Agent():
-    def __init__(self, model, simulation, frames, render):
+    def __init__(self, model_path, simulation, frames, render):
 
         self.sim = simulation
 
-        self.model = torch.load("./agents" + model)
+        fullpath = os.path.join(model_path)
+        if not os.path.exists(fullpath):
+            raise IOError("File %s does not exist" % fullpath)
+
+        self.model = torch.load(fullpath)
         self.simulation_frames = frames
 
         self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
@@ -153,7 +157,8 @@ class Manipulator_Agent():
 
         for t in range(timer):
 
-            self.viewer.render()
+            if self.render:
+                self.viewer.render()
 
             action = self.model.act(torch.as_tensor(self.observe(), dtype=torch.float32))
             self.sim.data.ctrl[:] = action
@@ -167,9 +172,17 @@ class Manipulator_Agent():
 
                 print('resuelto en:', t, "seg")
                 break
-
+            
+            
             for _ in range(self.simulation_frames):
                 self.sim.step()
+
+    def reset(self):
+       self.sim.reset()
+
+    def close(self):
+        if self.viewer is not None:
+            self.viewer = None
 
 # controlador clasico
 class Mujoco_controller(object):
