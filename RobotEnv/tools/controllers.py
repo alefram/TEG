@@ -127,7 +127,13 @@ class Manipulator_Agent():
     def observe(self):
         """observar mi entorno"""
 
-        gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
+        right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float32)
+        gripper_position = ((left_finger[0] + right_finger[0])/2, 
+                            (left_finger[1] + right_finger[1])/2, 
+                            (left_finger[2] + right_finger[2])/2)
+
+        # gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
         target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
         joints_position = self.sim.data.qpos.flat.copy().astype(np.float32)
         joints_velocity = self.sim.data.qvel.flat.copy().astype(np.float32)
@@ -138,44 +144,128 @@ class Manipulator_Agent():
 
         return observation
 
-
-    #TODO: agregar retorno de data de la posicion del efector final y articulaciones y acciones de control.
-    def move_to(self, target, distance_threshold=0.05, stabilizer=0.01, timer=100):
+    def move_to(self, target, distance_threshold=0.05, timer=100):
         """mover la posición de la garra hacia el target"""
 
         assert target.size == 3
-        left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
-        right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float32)
 
-        gripper_position = ((left_finger[0] + right_finger[0])/2, (left_finger[1] + right_finger[1])/2, (left_finger[2] + right_finger[2])/2)
-        target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
-        distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
-
+        #posiciono  el target en la simulación
         simulation_positions = self.sim.model.geom_pos.copy()
         simulation_positions[1] = target
         self.sim.model.geom_pos[:] = simulation_positions
 
+        data_x = []
+        data_y = []
+        data_z = []
+
+        qpos1 = []
+        qpos2 = []
+        qpos3 = []
+        qpos4 = []
+        qpos5 = []
+        qpos6 = []
+
+        control1 = []
+        control2 = []
+        control3 = []
+        control4 = []
+        control5 = []
+        control6 = []
+
+        self.sim.forward()
+
         for t in range(timer):
 
+            #mostrar la simulación
             if self.render:
                 self.viewer.render()
 
-            action = self.model.act(torch.as_tensor(self.observe(), dtype=torch.float32))
+            #observar
+            observation = self.observe()
+
+            # calcular la distancia entre el target y el efector final
+            gripper_position = np.array([observation[0], observation[1], observation[2]])
+            target_position = np.array([observation[3], observation[4], observation[5]])
+            distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
+
+            # aplicar acción de control
+            action = self.model.act(torch.as_tensor(observation, dtype=torch.float32))
             self.sim.data.ctrl[:] = action
 
+            self.sim.step()
+
+            # si la distancia entre el target y el limite es menor aplicar torque constante
             if (distance_norm < distance_threshold):
-                self.sim.data.ctrl[:] = stabilizer 
 
-                
-                for _ in range(self.simulation_frames):
-                    self.sim.step()
+                #guardar data
+                qpos1.append(observation[6])
+                qpos2.append(observation[7])
+                qpos3.append(observation[8])
+                qpos4.append(observation[9])
+                qpos5.append(observation[10])
+                qpos6.append(observation[11])
 
-                print('resuelto en:', t, "seg")
+                control1.append(action[0])
+                control2.append(action[1])
+                control3.append(action[2])
+                control4.append(action[3])
+                control5.append(action[4])
+                control6.append(action[5])
+
+                data_x.append(gripper_position[0])
+                data_y.append(gripper_position[1])
+                data_z.append(gripper_position[2])
+
+                print('resuelto en:', t, "pasos", t*0.002, "seg")
                 break
-            
-            
-            for _ in range(self.simulation_frames):
-                self.sim.step()
+
+            #guardar data
+            qpos1.append(observation[6])
+            qpos2.append(observation[7])
+            qpos3.append(observation[8])
+            qpos4.append(observation[9])
+            qpos5.append(observation[10])
+            qpos6.append(observation[11])
+
+            control1.append(action[0])
+            control2.append(action[1])
+            control3.append(action[2])
+            control4.append(action[3])
+            control5.append(action[4])
+            control6.append(action[5])
+
+            data_x.append(gripper_position[0])
+            data_y.append(gripper_position[1])
+            data_z.append(gripper_position[2])
+
+            if t == timer-1:
+                print('no se pudo alcanzar el target en:', t, "pasos", t*0.002, "seg")
+
+        qpos = {
+            "base_link": qpos1,
+            "shoulder_link": qpos2,
+            "elbow_link": qpos3,
+            "wrist_1_link": qpos4,
+            "wrist_2_link": qpos5,
+            "wrist_3_link": qpos6
+        }
+
+        control = {
+            "base_link": control1,
+            "shoulder_link": control2,
+            "elbow_link": control3,
+            "wrist_1_link": control4,
+            "wrist_2_link": control5,
+            "wrist_3_link": control6
+        }
+
+        position = {
+            "pos_x": data_x,
+            "pos_y": data_y,
+            "pos_z": data_z,
+        }
+
+        return position, qpos, control
 
     def reset(self):
        self.sim.reset()
@@ -184,64 +274,64 @@ class Manipulator_Agent():
         if self.viewer is not None:
             self.viewer = None
 
-# controlador clasico
-class Mujoco_controller(object):
-    """Controlador para un brazo manipulador usando mujoco y pid"""
+# # controlador clasico
+# class Mujoco_controller(object):
+#     """Controlador para un brazo manipulador usando mujoco y pid"""
 
-    def __init__(self, simulation=None, frames=None):
+#     def __init__(self, simulation=None, frames=None):
 
-        self.sim = simulation 
-        self.reached_target = False
-        self.q_current = np.zeros(len(self.sim.data.ctrl))
-        self.q_reference = []
-        self.create_control_list()
+#         self.sim = simulation 
+#         self.reached_target = False
+#         self.q_current = np.zeros(len(self.sim.data.ctrl))
+#         self.q_reference = []
+#         self.create_control_list()
 
 
-    def create_control_list(self):
-        """crear lista de controladores"""
+#     def create_control_list(self):
+#         """crear lista de controladores"""
 
-        self.control_list = []
+#         self.control_list = []
 
-        sample_time = 0.001
+#         sample_time = 0.001
 
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #base 
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #shoulder
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #elbow
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist1
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist2
-        self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist3        
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #base 
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #shoulder
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #elbow
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist1
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist2
+#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist3        
             
-    # def move_to(self, target): 
-    #     """mover la posición de la garra hacia el target"""
+#     # def move_to(self, target): 
+#     #     """mover la posición de la garra hacia el target"""
 
-    #     assert target.size == 3
+#     #     assert target.size == 3
 
-    #     # obtener posición del target y colocar en la simulacion
-    #     simulation_positions = self.sim.model.geom_pos.copy()
-    #     simulation_positions[1] = target
-    #     self.sim.model.geom_pos[:] = simulation_positions
+#     #     # obtener posición del target y colocar en la simulacion
+#     #     simulation_positions = self.sim.model.geom_pos.copy()
+#     #     simulation_positions[1] = target
+#     #     self.sim.model.geom_pos[:] = simulation_positions
 
-    #     # obtener el error
-    #     self.q_reference = kinverse_kinematics(target, self.sim)
-    #     self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
+#     #     # obtener el error
+#     #     self.q_reference = kinverse_kinematics(target, self.sim)
+#     #     self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
 
-    #     # aplicar pids
-    #     pids = self.control_list
+#     #     # aplicar pids
+#     #     pids = self.control_list
 
-    #     for i in range(len(pids)):
-    #         pids[i].update(self.q_current[i])
+#     #     for i in range(len(pids)):
+#     #         pids[i].update(self.q_current[i])
 
-    #         self.sim.data.ctrl[i] = pids[i].u_t
+#     #         self.sim.data.ctrl[i] = pids[i].u_t
             
 
-    #     for _ in range(self.simulation_frames):
-    #         self.sim.step()
+#     #     for _ in range(self.simulation_frames):
+#     #         self.sim.step()
         
-    #     # verificar si la posición del target se alcanzó
-    #     if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
-    #         self.reached_target = True
+#     #     # verificar si la posición del target se alcanzó
+#     #     if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
+#     #         self.reached_target = True
         
-    #     return self.reached_target
+#     #     return self.reached_target
 
 
 

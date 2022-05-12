@@ -50,6 +50,8 @@ class Logger(object):
 
     #TODO:crear funcion de almacenar data de la simulación
 
+    #TODO: crear funcion que grafique trayectoria en 3D
+
     def show(self):
         """mostrar graficos"""
         plt.show()
