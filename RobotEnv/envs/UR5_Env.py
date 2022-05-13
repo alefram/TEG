@@ -37,7 +37,7 @@ class UR5_EnvTest(gym.Env):
     4. Gui: Booleano que indica si se permite visualización del brazo manipulador.
 
     """
-    def __init__(self, simulation_frames, torque_control, distance_threshold, Gui):
+    def __init__(self, simulation_frames, torque_control, distance_threshold, gui):
 
         #inicializar configuraciones de la simulacion
         self.Gui = Gui
@@ -75,7 +75,7 @@ class UR5_EnvTest(gym.Env):
         self.observation_space = convert_observation_to_space(observation)
 
         #configurar el target
-        self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
+        self.target_bounds = np.array(((-0.3, 0.1), (-0.4, 0.4), (0.45, 0.7)), dtype=object) #limites del target a alcanzar
 
 
         self.seed()
@@ -171,7 +171,7 @@ class UR5_EnvTest(gym.Env):
         """
         Esta función permite aplicar control en n cuadros de simulación
         estos pasos son distintos de los pasos del agente
-        los simulation frames son los pasos de simulación utilizando un controlador
+        los simulation frames son los pasos de simulación utilizando una acción de control
 
         """
 
@@ -215,7 +215,7 @@ class UR5_EnvTest(gym.Env):
 
         """
         gripper_position = self.sim.data.get_body_xpos('ee_link').astype(np.float32)
-        target_position = self.sim.data.get_geom_xpos("target")
+        target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
 
 
         info = {
