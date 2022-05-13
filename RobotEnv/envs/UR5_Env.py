@@ -40,7 +40,7 @@ class UR5_EnvTest(gym.Env):
     def __init__(self, simulation_frames, torque_control, distance_threshold, gui):
 
         #inicializar configuraciones de la simulacion
-        self.Gui = Gui
+        self.Gui = gui
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
