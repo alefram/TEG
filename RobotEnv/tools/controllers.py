@@ -172,6 +172,8 @@ class Manipulator_Agent():
         control5 = []
         control6 = []
 
+        obs = []
+
         self.sim.forward()
 
         for t in range(timer):
@@ -216,6 +218,8 @@ class Manipulator_Agent():
                 data_y.append(gripper_position[1])
                 data_z.append(gripper_position[2])
 
+                obs.append(observation)
+
                 print('resuelto en:', t, "pasos", t*0.002, "seg")
                 break
 
@@ -237,6 +241,8 @@ class Manipulator_Agent():
             data_x.append(gripper_position[0])
             data_y.append(gripper_position[1])
             data_z.append(gripper_position[2])
+
+            obs.append(observation)
 
             if t == timer-1:
                 print('no se pudo alcanzar el target en:', t, "pasos", t*0.002, "seg")
@@ -265,7 +271,7 @@ class Manipulator_Agent():
             "pos_z": data_z,
         }
 
-        return position, qpos, control
+        return position, qpos, control, obs
 
     def reset(self):
        self.sim.reset()
@@ -273,65 +279,5 @@ class Manipulator_Agent():
     def close(self):
         if self.viewer is not None:
             self.viewer = None
-
-# # controlador clasico
-# class Mujoco_controller(object):
-#     """Controlador para un brazo manipulador usando mujoco y pid"""
-
-#     def __init__(self, simulation=None, frames=None):
-
-#         self.sim = simulation 
-#         self.reached_target = False
-#         self.q_current = np.zeros(len(self.sim.data.ctrl))
-#         self.q_reference = []
-#         self.create_control_list()
-
-
-#     def create_control_list(self):
-#         """crear lista de controladores"""
-
-#         self.control_list = []
-
-#         sample_time = 0.001
-
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #base 
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #shoulder
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #elbow
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist1
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist2
-#         self.control_list.append(PID(Kp=0.5, Ki=0.0, Kd=0.0, sample_time=sample_time)) #wrist3        
-            
-#     # def move_to(self, target): 
-#     #     """mover la posición de la garra hacia el target"""
-
-#     #     assert target.size == 3
-
-#     #     # obtener posición del target y colocar en la simulacion
-#     #     simulation_positions = self.sim.model.geom_pos.copy()
-#     #     simulation_positions[1] = target
-#     #     self.sim.model.geom_pos[:] = simulation_positions
-
-#     #     # obtener el error
-#     #     self.q_reference = kinverse_kinematics(target, self.sim)
-#     #     self.q_current = self.sim.data.qpos.flat.copy().astype(np.float32)
-
-#     #     # aplicar pids
-#     #     pids = self.control_list
-
-#     #     for i in range(len(pids)):
-#     #         pids[i].update(self.q_current[i])
-
-#     #         self.sim.data.ctrl[i] = pids[i].u_t
-            
-
-#     #     for _ in range(self.simulation_frames):
-#     #         self.sim.step()
-        
-#     #     # verificar si la posición del target se alcanzó
-#     #     if np.linalg.norm(self.q_current - self.q_reference) < 0.05:
-#     #         self.reached_target = True
-        
-#     #     return self.reached_target
-
 
 
