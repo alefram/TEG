@@ -17,7 +17,7 @@ class PID():
         self.sample_time = 0.0
         self.current_time = current_time if current_time is not None else time.time()
         self.last_time = self.current_time
- 
+
         self.reset()
 
 
@@ -101,16 +101,17 @@ class PID():
 
 # crear clase controlador inteligente
 class Manipulator_Agent():
-    def __init__(self, model_path, simulation, frames, render):
+    def __init__(self, model_path, simulation, render):
 
         self.sim = simulation
 
-        fullpath = os.path.join(model_path)
+        fullpath = "/home/alexis/Documentos/repos/TEG/agents/"+ \
+                    model_path + "/pyt_save/model.pt"
+
         if not os.path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
 
         self.model = torch.load(fullpath)
-        self.simulation_frames = frames
 
         self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
         self.init_qvel = [0,0,0,0,0,0]
@@ -119,18 +120,18 @@ class Manipulator_Agent():
 
         self.render = render
 
-        if self.render:        
+        if self.render:
             self.viewer = mujoco_py.MjViewer(self.sim)
 
-        self.sim.forward()
+        self.reset()
 
     def observe(self):
         """observar mi entorno"""
 
         left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
         right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float32)
-        gripper_position = ((left_finger[0] + right_finger[0])/2, 
-                            (left_finger[1] + right_finger[1])/2, 
+        gripper_position = ((left_finger[0] + right_finger[0])/2,
+                            (left_finger[1] + right_finger[1])/2,
                             (left_finger[2] + right_finger[2])/2)
 
         # gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
@@ -148,11 +149,6 @@ class Manipulator_Agent():
         """mover la posición de la garra hacia el target"""
 
         assert target.size == 3
-
-        #posiciono  el target en la simulación
-        simulation_positions = self.sim.model.geom_pos.copy()
-        simulation_positions[1] = target
-        self.sim.model.geom_pos[:] = simulation_positions
 
         data_x = []
         data_y = []
@@ -174,7 +170,7 @@ class Manipulator_Agent():
 
         obs = []
 
-        self.sim.forward()
+        # self.sim.forward()
 
         for t in range(timer):
 
@@ -274,10 +270,12 @@ class Manipulator_Agent():
         return position, qpos, control, obs
 
     def reset(self):
-       self.sim.reset()
+
+        self.sim.data.qpos[:] = self.init_qpos
+        self.sim.data.qvel[:] = self.init_qvel
+
+        self.sim.forward()
 
     def close(self):
         if self.viewer is not None:
             self.viewer = None
-
-
