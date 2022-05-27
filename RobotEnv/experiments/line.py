@@ -48,8 +48,8 @@ logger = Logger()
 def main():
 
     # recta
-    x =  [i/10 for i in range(-2,2)]
-#    x = [-0.2, -0.1, 0.0, 0.1, 0.2]
+#    x =  [i/100 for i in range(-2,2)]
+    x = [-0.2, -0.15, -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2]
     y = x
 
     #data
@@ -83,6 +83,14 @@ def main():
             posy.extend(position["pos_y"])
             posz.extend(position["pos_z"])
 
+
+
+    # calculo del error
+    y = np.array(y)
+    datay = np.array(datay)
+#    mse = (np.square(y - datay)).mean()
+    mse = np.square(np.subtract(y,datay)).mean()
+    print("error cuadratico medio:", mse)
     # graficar
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')

@@ -48,7 +48,7 @@ logger = Logger()
 def main():
 
     #circulo
-    theta = np.linspace(0, 2*np.pi, 50)
+    theta = np.linspace(0, 2*np.pi, 20)
     r = np.sqrt(0.04)
     x = r*np.cos(theta)
     y = r*np.sin(theta)
@@ -83,6 +83,14 @@ def main():
             posx.extend(position["pos_x"])
             posy.extend(position["pos_y"])
             posz.extend(position["pos_z"])
+
+
+
+    # calculo del error
+    y = np.array(y)
+    datay = np.array(datay)
+    mse = np.square(np.subtract(y,datay)).mean()
+    print("error cuadratico medio:", mse)
 
     # grafica
     fig = plt.figure()
