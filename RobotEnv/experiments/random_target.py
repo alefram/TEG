@@ -14,9 +14,13 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--agent", help="selecionar agente")
-parser.add_argument("--dist", help="distancia minima para lograr la tarea", type=float)
+parser.add_argument("--dist", 
+                    help="distancia minima para lograr la tarea", 
+                    type=float)
 parser.add_argument("--render", help="mostrar simulación")
-parser.add_argument("-t", "--timer", help="tiempo de duración del controlador ajustando", type=int)
+parser.add_argument("-t", "--timer", 
+                    help="tiempo de duración del controlador ajustando", 
+                    type=int)
 parser.add_argument("-i", "--episodes", help="episodios", type=int)
 
 args = parser.parse_args()
@@ -40,7 +44,8 @@ controller = controllers.Manipulator_Agent(agent, sim, render=render)
 logger = Logger()
 
 def main():
-
+    win = 0
+    average_time = []
     for i in range(episodes):
         print('---------------------')
         print("episodio", i)
@@ -49,7 +54,18 @@ def main():
         goal = simulation.random_target(target_bounds, geom_pos, sim)
         controller.reset()
 
-        controller.move_to(np.array(goal), distance_threshold=dist, timer=timer)
+        _, _, _, done, t = controller.move_to(np.array(goal), 
+                                           distance_threshold=dist, timer=timer)
+        
+        average_time.append(t)
+        if (done):
+            win += 1
+    print("-------------------------")
+    print("Tasa de aciertos")
+    print(win, "de", episodes)
+    print("Promedio de tiempo")
+    print((sum(average_time) / len(average_time))*0.002)
+    print("-------------------------")
 
 if __name__ == "__main__":
     main()
@@ -80,3 +96,5 @@ if __name__ == "__main__":
 #             break
 #
 # env.close()
+
+

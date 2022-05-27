@@ -1,8 +1,8 @@
-import mujoco_py
-import numpy as  np
-import os
-import gym
-from gym import error, spaces, utils
+import mujoco_py 
+import numpy as np 
+import os 
+import gym 
+from gym import error, spaces, utils 
 from gym.utils import seeding
 
 

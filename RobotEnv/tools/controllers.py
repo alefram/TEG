@@ -168,9 +168,10 @@ class Manipulator_Agent():
         control5 = []
         control6 = []
 
-        obs = []
+        done = False
+        steps = 0
 
-        # self.sim.forward()
+        self.sim.forward()
 
         for t in range(timer):
 
@@ -193,7 +194,7 @@ class Manipulator_Agent():
             self.sim.step()
 
             # si la distancia entre el target y el limite es menor aplicar torque constante
-            if (distance_norm < distance_threshold):
+            if (distance_norm <= distance_threshold):
 
                 #guardar data
                 qpos1.append(observation[6])
@@ -214,7 +215,8 @@ class Manipulator_Agent():
                 data_y.append(gripper_position[1])
                 data_z.append(gripper_position[2])
 
-                obs.append(observation)
+                done = True
+                steps = t
 
                 print('resuelto en:', t, "pasos", t*0.002, "seg")
                 break
@@ -238,7 +240,6 @@ class Manipulator_Agent():
             data_y.append(gripper_position[1])
             data_z.append(gripper_position[2])
 
-            obs.append(observation)
 
             if t == timer-1:
                 print('no se pudo alcanzar el target en:', t, "pasos", t*0.002, "seg")
@@ -267,7 +268,7 @@ class Manipulator_Agent():
             "pos_z": data_z,
         }
 
-        return position, qpos, control, obs
+        return position, qpos, control, done, steps
 
     def reset(self):
 
@@ -279,3 +280,4 @@ class Manipulator_Agent():
     def close(self):
         if self.viewer is not None:
             self.viewer = None
+        
