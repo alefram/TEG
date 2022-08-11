@@ -23,7 +23,7 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     <!-- configuracion del compilador -->
     <compiler inertiafromgeom='true' angle='radian' meshdir="meshes/V2"/>
-    <option  timestep="0.001" gravity="0 0 0"/>
+    <option  timestep="0.002" gravity="0 0 0"/>
 
     <!-- valores por defecto para la simulación -->
     <default>
@@ -38,6 +38,8 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     <!-- objetos a renderizar -->
     <worldbody>
+
+        <camera name="view2" pos="1.0 0.7 0.3" xyaxes="-1 1 0 0 0 1" fovy="45" ipd="0.068"/>
 
         <!-- piso -->
         <geom

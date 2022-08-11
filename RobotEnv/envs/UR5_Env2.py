@@ -27,7 +27,7 @@ def convert_observation_to_space(observation):
 
 
 
-class UR5_EnvTest(gym.Env):
+class UR5_EnvTest2(gym.Env):
     """
     ### argumentos iniciales:
 
@@ -37,13 +37,14 @@ class UR5_EnvTest(gym.Env):
     4. Gui: Booleano que indica si se permite visualización del brazo manipulador.
 
     """
-    def __init__(self, simulation_frames, torque_control, distance_threshold, gui):
+    def __init__(self, simulation_frames, torque_control, distance_threshold, gui, timer):
 
         #inicializar configuraciones de la simulacion
         self.Gui = gui
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
+        self.timer = timer
 
         #inicializar el modelo del robot
         model_path = "robotModelV2.xml"
@@ -89,6 +90,8 @@ class UR5_EnvTest(gym.Env):
         self.sim.data.qpos[:] = self.init_qpos
         self.sim.data.qvel[:] = self.init_qvel
 
+        self.time_step = 0
+
         self.sim.forward()
 
         return self.get_observation()
@@ -110,14 +113,16 @@ class UR5_EnvTest(gym.Env):
         # obtengo la recompenza
         reward = self.compute_reward(observation, action)
 
-        # verifico que la garra este al menos de 5cm dando recompensa 1 y terminar el episodio
+        # verifico que el tiempo de acción llego a lo indicado y terminar el episodio
         # aqui se considera la lograda y terminada
-        if (reward == 1):
+
+        self.time_step += 1
+
+        if (self.time_step == self.timer):
             done = True
 
+        
         info = self.get_info(observation)
-
-        rgb = self._get_obs_rgb_view2
 
         return observation, reward, done, info
 

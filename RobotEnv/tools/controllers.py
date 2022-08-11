@@ -218,6 +218,8 @@ class Manipulator_Agent():
                 done = True
                 steps = t
 
+                # self.sim.step()
+
                 print('resuelto en:', t, "pasos", t*0.002, "seg")
                 break
 
