@@ -1,7 +1,7 @@
 import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 
-env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05, gui=False)
+env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05, gui=True)
 
 for i_episode in range(20):
     print("estoy en pisodio",i_episode)
@@ -15,7 +15,7 @@ for i_episode in range(20):
 
         action = env.action_space.sample()
         print("Action del agente",action)
-        observation, reward, done, info, rgb = env.step(action)
+        observation, reward, done, info = env.step(action)
 
         print('-----------------')
         print('observacion')
