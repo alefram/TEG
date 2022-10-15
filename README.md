@@ -48,10 +48,8 @@ env.close()
 ```
 
 
-
 ### 🧾 License
 
-
-
+The Apache 2.0 License
  
     
