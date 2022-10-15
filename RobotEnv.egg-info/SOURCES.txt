@@ -1,7 +1,0 @@
-README.md
-setup.py
-RobotEnv.egg-info/PKG-INFO
-RobotEnv.egg-info/SOURCES.txt
-RobotEnv.egg-info/dependency_links.txt
-RobotEnv.egg-info/requires.txt
-RobotEnv.egg-info/top_level.txt
