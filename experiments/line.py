@@ -3,12 +3,13 @@
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 from RobotEnv.tools import simulation
 from RobotEnv.tools import controllers
-from RobotEnv.tools.logger import Logger
 import numpy as np
 import os
 import argparse
 import mpl_toolkits.mplot3d
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
+from RobotEnv.tools.ik import inverse_kinematics
+from dm_control import mujoco
 
 # construir los inputs del usuario
 parser = argparse.ArgumentParser()
@@ -31,6 +32,8 @@ geom_pos = 1
 timer = args.timer
 episodes = args.episodes
 agent = args.agent
+PHYSICS_PATH = "../RobotEnv/assets/UR5/robotModelV3.xml"
+
 
 sim = simulation.create_simulation("robotModelV3.xml")
 controller = controllers.Manipulator_Agent(agent, sim, render=render)
@@ -40,8 +43,8 @@ def main():
 
     # recta
 #    x =  [i/100 for i in range(-2,2)]
-    x = [-0.2, -0.15, -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2,
-        0.15, 0.1, 0.05, 0.0, -0.05, -0.1, -0.15, -0.15, -0.2]
+    x = [-0.2, -0.15, -0.1, -0.05, 0.0, 0.05, 0.1, 0.15, 0.2, 0.15, 0.1, 0.05, 
+         0.0, -0.05, -0.1, -0.15, -0.2]
     y = x
 
     #data
@@ -50,7 +53,7 @@ def main():
     posz = []
     datax = []
     datay = []
-    target_array = []
+    targets = []
 
     for i in range(episodes):
         print('---------------------')
@@ -62,9 +65,10 @@ def main():
         for i in range(len(x)):
             
             target = np.array([x[i], y[i], 0.45])
-            target_array.append(target)
+            targets.append(target)
             simulation.post_target(sim, target, geom_pos)
-            pos, qpos, a, d, s, s_array, _, _ = controller.move_to(np.array(target), 
+
+            pos, qpos, control, d, steps, = controller.move_to(np.array(target), 
                                                 distance_threshold=dist, 
                                                 timer=timer+1
                                                 )
@@ -75,12 +79,32 @@ def main():
             posy.extend(pos["pos_y"])
             posz.extend(pos["pos_z"])
 
-    # calculo del error
-    y = np.array(y)
-    datay = np.array(datay)
-#    mse = (np.square(y - datay)).mean()
-    mse = np.square(np.subtract(y,datay)).mean()
-    print("error cuadratico medio:", mse)
+
+
+# ------------------------------RESULTADOS--------------------------------------
+
+
+# variable de ayuda
+
+    print("targets:", targets[0])
+
+    # crear el modelo de dm_control del robot
+    physics = mujoco.Physics.from_xml_path(PHYSICS_PATH)
+
+    # hacer cinematica inversa
+    _joints = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
+    _tol = 1.2e-14
+    _max_steps = timer
+    _max_resets = 10
+    _inplace = [False, True]
+    _target = np.array([target[0], target[1], target[2]])
+    _site = "test"
+
+    steps_array = [i for i in range(steps)]
+    targetx = [np.array(target[0]) for i in range(steps)]
+    targety = [np.array(target[1]) for i in range(steps)]
+    targetz = [np.array(target[2]) for i in range(steps)]
+
 
 # colocar la grafica de la trayectoria que genera en comparación de la ideal.  
     fig = plt.figure()
@@ -91,14 +115,13 @@ def main():
     ax.legend()
 
 # TODO: colocar grafica de los angulos inferidos.
-# TODO: crear una función de cinematica inversa para evitar el error de los angulos
 
 
     fig2, ax2 = plt.subplots(1, 1)
-    reference = [results[0] for i in range(len(s_array))]
+    reference = [result.qpos[0] for i in range(steps)]
     ax2.set_title("Angulo aplicado por el actuador base_link")
-    ax2.plot(s_array, qpos["base_link"], label="trayectoria")
-    # ax2.plot(s_array, reference, linewidth=2.0, label="objetivo",
+    ax2.plot(steps_array, qpos["base_link"], linewidth=2.0, label="trayectoria")
+    # ax2.plot(steps_array, reference, linewidth=2.0, label="objetivo",
     #               linestyle="--", color="gray")
     ax2.set_xlabel("iteraciones")
     ax2.set_ylabel("angulo(rad)")
@@ -106,62 +129,68 @@ def main():
     ax2.grid(True)
 
     fig3, ax3 = plt.subplots(1, 1)
-    # reference = [result.qpos[1] for i in range(len(s_array))]
+    reference = [result.qpos[1] for i in range(steps)]
     ax3.set_title("Angulo aplicado por el actuador shoulder_link")
-    ax3.plot(s_array, qpos["shoulder_link"], label="trayectoria")
-    # ax3.plot(s_array, reference, linewidth=2.0, label="objetivo",
-                  # linestyle="--", color="gray")
+    ax3.plot(steps_array, qpos["shoulder_link"], linewidth=2.0, label="trayectoria")
+    # ax3.plot(steps_array, reference, linewidth=2.0, label="objetivo",
+    #               linestyle="--", color="gray")
     ax3.set_xlabel("iteraciones")
     ax3.set_ylabel("angulo(rad)")
     ax3.legend()
     ax3.grid(True)
 
     fig4, ax4 = plt.subplots(1, 1)
-    # reference = [result.qpos[2] for i in range(len(s_array))]
+    reference = [result.qpos[2] for i in range(steps)]
     ax4.set_title("Angulo aplicado por el actuador elbow_link")
-    ax4.plot(s_array, qpos["elbow_link"], label="trayectoria")
-    # ax4.plot(s_array, reference, linewidth=2.0, label="objetivo",
-                  # linestyle="--", color="gray")
+    ax4.plot(steps_array, qpos["elbow_link"], linewidth=2.0, label="trayectoria")
+    # ax4.plot(steps_array, reference, linewidth=2.0, label="objetivo",
+    #               linestyle="--", color="gray")
     ax4.set_xlabel("iteraciones")
     ax4.set_ylabel("angulo(rad)")
     ax4.legend()
     ax4.grid(True)
 
     fig5, ax5 = plt.subplots(1, 1)
-    # reference = [result.qpos[3] for i in range(len(s_array))]
+    reference = [result.qpos[3] for i in range(steps)]
     ax5.set_title("Angulo aplicado por el actuador wrist_1_link")
-    ax5.plot(s_array, qpos["wrist_1_link"], label="trayectoria")
-    # ax5.plot(s_array, reference, linewidth=2.0, label="objetivo",
-                  # linestyle="--", color="gray")
+    ax5.plot(steps_array, qpos["wrist_1_link"], linewidth=2.0, label="trayectoria")
+    # ax5.plot(steps_array, reference, linewidth=2.0, label="objetivo",
+    #               linestyle="--", color="gray")
     ax5.set_xlabel("iteraciones")
     ax5.set_ylabel("angulo(rad)")
     ax5.legend()
     ax5.grid(True)
 
     fig6, ax6 = plt.subplots(1, 1)
-    # reference = [result.qpos[4] for i in range(len(s_array))]
+    reference = [result.qpos[4] for i in range(steps)]
     ax6.set_title("Angulo aplicado por el actuador wrist_2_link")
-    ax6.plot(s_array, qpos["wrist_2_link"], label="trayectoria")
-    # ax6.plot(s_array, reference, linewidth=2.0, label="objetivo",
-                  # linestyle="--", color="gray")
+    ax6.plot(steps_array, qpos["wrist_2_link"], linewidth=2.0, label="trayectoria")
+    # ax6.plot(steps_array, reference, linewidth=2.0, label="objetivo",
+    #               linestyle="--", color="gray")
     ax6.set_xlabel("iteraciones")
     ax6.set_ylabel("angulo(rad)")
     ax6.legend()
     ax6.grid(True)
 
     fig7, ax7 = plt.subplots(1, 1)
-    # reference = [result.qpos[5] for i in range(len(s_array))]
+    reference = [result.qpos[5] for i in range(steps)]
     ax7.set_title("Angulo aplicado por el actuador wrist_3_link")
-    ax7.plot(s_array, qpos["wrist_3_link"], label="trayectoria")
-    # ax7.plot(s_array, reference, linewidth=2.0, label="objetivo",
-                  # linestyle="--", color="gray")
+    ax7.plot(steps_array, qpos["wrist_3_link"], linewidth=2.0, label="trayectoria")
+    # ax7.plot(steps_array, reference, linewidth=2.0, label="objetivo",
+    #               linestyle="--", color="gray")
     ax7.set_xlabel("iteraciones")
     ax7.set_ylabel("angulo(rad)")
     ax7.legend()
-    ax7.grid(True) 
+    ax7.grid(True)
 
 # TODO: colocar grafica del torque aplicado. 
 # TODO: colocar el error entre la trayectoria deseada y la generada.
+
+# calculo del error
+    y = np.array(y)
+    datay = np.array(datay)
+    mse = np.square(np.subtract(y,datay)).mean()
+    print("error cuadratico medio:", mse)
 
     plt.show()
 

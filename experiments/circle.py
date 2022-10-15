@@ -3,17 +3,13 @@
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 from RobotEnv.tools import simulation
 from RobotEnv.tools import controllers
-from RobotEnv.tools.logger import Logger
+from RobotEnv.tools.ik import inverse_kinematics
 import numpy as np
 import os
 import argparse
 import mpl_toolkits.mplot3d
 import matplotlib.pyplot as plt
 from dm_control import mujoco
-from dm_control.utils import inverse_kinematics as ik
-from dm_control.mujoco.wrapper import mjbindings
-
-mjlib = mjbindings.mjlib
 
 # construir los inputs del usuario
 
@@ -37,17 +33,10 @@ geom_pos = 1
 timer = args.timer
 episodes = args.episodes
 agent = args.agent
+PHYSICS_PATH = "../RobotEnv/assets/UR5/robotModelV3.xml"
 
 sim = simulation.create_simulation("robotModelV3.xml")
 controller = controllers.Manipulator_Agent(agent, sim, render=render)
-
-_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
-_TOL = 1.2e-14
-_SITE = "test"
-_INPLACE =  [False, True]
-
-# crear el modelo de dm_control del robot
-physics = mujoco.Physics.from_xml_path("../assets/UR5/robotModelV3.xml")
 
 # loop de recorido de la trayectoria
 def main():
@@ -65,6 +54,7 @@ def main():
     datax = []
     datay = []
     target_array = []
+
     for i in range(episodes):
         print('---------------------')
         print("episodio", i)
@@ -78,8 +68,7 @@ def main():
             target_array.append(target)
             simulation.post_target(sim, target, geom_pos)
 
-            pos, qpos, control, d, t, steps_array, _target, target_position = \
-                                        controller.move_to(np.array(target),
+            pos, qpos, control, d, steps = controller.move_to(np.array(target),
                                         distance_threshold=dist,
                                         timer=timer)
 
@@ -89,6 +78,24 @@ def main():
 
 # --------------------------------- RESULTADOS----------------------------------
 
+# variable de ayuda
+
+    # crear el modelo de dm_control del robot
+    physics = mujoco.Physics.from_xml_path(PHYSICS_PATH)
+
+    # hacer cinematica inversa
+    _joints = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
+    _tol = 1.2e-14
+    _max_steps = timer
+    _max_resets = 10
+    _inplace = [False, True]
+    _target = np.array([target[0], target[1], target[2]])
+    _site = "test"
+
+    steps_array = [i for i in range(steps)]
+    targetx = [np.array(target[0]) for i in range(steps)]
+    targety = [np.array(target[1]) for i in range(steps)]
+    targetz = [np.array(target[2]) for i in range(steps)]
 
 
 # grafica de la trayectoria que genera en comparación de la ideal.
@@ -99,25 +106,6 @@ def main():
     ax.legend()
 
 #TODO: colocar grafica de los angulos inferidos
-    physics2 = physics.copy(share_model=True)
-    results = []
-
-    for i in range(len(target_array)):
-        print(target_array[i])
-        result = ik.qpos_from_site_pose(
-            physics=physics2,
-            site_name=_SITE,
-            target_pos=target_array[i],
-            target_quat=None,
-            joint_names=_JOINTS,
-            tol=_TOL,
-            max_steps=timer,
-            inplace=_INPLACE
-        )
-        results.append(result.qpos)
-
-    print(results)
-
 
     fig2, ax2 = plt.subplots(1, 1)
     # reference = [result.qpos[0] for i in range(len(steps_array))]
@@ -191,6 +179,7 @@ def main():
     ax7.grid(True)    
 
 #TODO: colocar grafica del torque aplicado. 
+
 #TODO: colocar el error entre la trayectoria deseada y la generada.
     # calculo del error
     y = np.array(y)

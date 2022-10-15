@@ -3,18 +3,13 @@
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 from RobotEnv.tools import simulation
 from RobotEnv.tools import controllers
-from RobotEnv.tools.logger import Logger
 import numpy as np
 import os
 import argparse
 import mpl_toolkits.mplot3d
 import matplotlib.pyplot as plt
 from dm_control import mujoco
-from dm_control.utils import inverse_kinematics as ik
-from dm_control.mujoco.wrapper import mjbindings
-
-mjlib = mjbindings.mjlib
-
+from RobotEnv.tools.ik import inverse_kinematics
 
 # construir los inputs del usuario
 
@@ -38,6 +33,8 @@ geom_pos = 1
 timer = args.timer
 episodes = args.episodes
 agent = args.agent
+PHYSICS_PATH = "../RobotEnv/assets/UR5/robotModelV3.xml"
+
 
 sim = simulation.create_simulation("robotModelV3.xml")
 
@@ -59,20 +56,37 @@ def main():
         print("episodio", i)
         print('---------------------')
 
-        goal = simulation.random_target(target_bounds, geom_pos, sim)
+        target = simulation.random_target(target_bounds, geom_pos, sim)
         controller.reset()
 
-        position, qpos, control, done, t, steps_array, target, target_position = \
-                                            controller.move_to(
-                                            np.array(goal), 
+        position, qpos, control, done, steps = controller.move_to(np.array(target), 
                                            distance_threshold=dist, timer=timer)
         
-        average_time.append(t)
+        average_time.append(steps)
 
         if (done):
             win += 1
 
 # ------------------------------RESULTADOS--------------------------------------
+
+# variables de ayuda
+
+    # crear el modelo de dm_control del robot
+    physics = mujoco.Physics.from_xml_path(PHYSICS_PATH)
+
+    # hacer cinematica inversa
+    _joints = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
+    _tol = 1.2e-14
+    _max_steps = timer
+    _max_resets = 10
+    _inplace = [False, True]
+    _target = np.array([target[0], target[1], target[2]])
+    _site = "test"
+
+    steps_array = [i for i in range(steps)]
+    targetx = [np.array(target[0]) for i in range(steps)]
+    targety = [np.array(target[1]) for i in range(steps)]
+    targetz = [np.array(target[2]) for i in range(steps)]
 
     print("-------------------------")
     print("Tasa de aciertos")
@@ -84,12 +98,13 @@ def main():
 # TODO:hacer grafica de tasas de aciertos
 
 # grafica de trayectoria final.
+
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(projection="3d")
     fig1.suptitle("Trayectoria para un objetivo")
     ax1.plot(position["pos_x"], position["pos_y"], position["pos_z"],
             linewidth=2.0, label="trayectoria")
-    ax1.plot(target["x"], target["y"], target["z"], 'o', 
+    ax1.plot(targetx, targety, targetz, 'o', 
         linewidth=2.0, label="objetivo")
     ax1.set_xlabel("posición x")
     ax1.set_ylabel("posición y")
@@ -99,10 +114,10 @@ def main():
 
     fig2, ax2 = plt.subplots(1,1)
     fig2.suptitle("Trayectoria del efector final en x por iteración")
-    sup = target['x'] + np.array([dist for i in range(len(steps_array))])
-    inf = target['x'] - np.array([dist for i in range(len(target['x']))])
+    sup = targetx + np.array([dist for i in range(steps)])
+    inf = targetx - np.array([dist for i in range(steps)])
     ax2.plot(steps_array, position['pos_x'], linewidth=2.0, label="trayectoria")
-    ax2.plot(steps_array, target["x"], linestyle='--', linewidth=2.0, 
+    ax2.plot(steps_array, targetx, linestyle='--', linewidth=2.0, 
             label="objetivo")
     ax2.fill_between(steps_array, sup, inf, alpha=0.2)
     ax2.set_xlabel("tiempo(s)")
@@ -112,10 +127,10 @@ def main():
 
     fig3, ax3 = plt.subplots(1,1)
     fig3.suptitle("Trayectoria del efector final en y por iteración")
-    sup2 = target['y'] + np.array([dist for i in range(len(steps_array))])
-    inf2 = target['y'] - np.array([dist for i in range(len(target['y']))])
+    sup2 = targety + np.array([dist for i in range(steps)])
+    inf2 = targety - np.array([dist for i in range(steps)])
     ax3.plot(steps_array, position['pos_y'], linewidth=2.0, label="trayectoria")
-    ax3.plot(steps_array, target["y"], linestyle='--', linewidth=2.0, 
+    ax3.plot(steps_array, targety, linestyle='--', linewidth=2.0, 
             label="objetivo")
     ax3.fill_between(steps_array, sup2, inf2, alpha=0.2, label="umbral objetivo")
     ax3.set_xlabel("tiempo(s)")
@@ -125,10 +140,10 @@ def main():
 
     fig4, ax4 = plt.subplots(1,1)
     fig4.suptitle("Trayectoria del efector final en z por iteración")
-    sup3 = target['z'] + np.array([dist for i in range(len(steps_array))])
-    inf3 = target['z'] - np.array([dist for i in range(len(target['z']))])
+    sup3 = targetz + np.array([dist for i in range(steps)])
+    inf3 = targetz - np.array([dist for i in range(steps)])
     ax4.plot(steps_array, position['pos_z'], linewidth=2.0, label="trayectoria")
-    ax4.plot(steps_array, target["z"], linestyle='--', linewidth=2.0, 
+    ax4.plot(steps_array, targetz, linestyle='--', linewidth=2.0, 
             label="objetivo")
     ax4.fill_between(steps_array, sup3, inf3, alpha=0.2, label="umbral objetivo")
     ax4.set_xlabel("tiempo(s)")
@@ -137,10 +152,10 @@ def main():
     ax4.legend()
 
 # graficar error de trayectoria cartesiana
-    error_x = np.subtract(np.array(target["x"]), np.array(position["pos_x"]))
-    error_y = np.subtract(np.array(target["y"]), np.array(position["pos_y"]))
-    error_z = np.subtract(np.array(target["z"]), np.array(position["pos_z"]))
-    reference = [ 0 for i in range(len(steps_array))]
+    error_x = np.subtract(np.array(targetx), np.array(position["pos_x"]))
+    error_y = np.subtract(np.array(targety), np.array(position["pos_y"]))
+    error_z = np.subtract(np.array(targetz), np.array(position["pos_z"]))
+    reference = [ 0 for i in range(steps)]
 
     fig5, ax5 = plt.subplots(1,1)
     ax5.plot(steps_array, error_x, linewidth=2.0, label="error en eje x")
@@ -155,39 +170,13 @@ def main():
 
     fig5.suptitle("Error absoluto de la trayectoria")
 
-#Colocar la grafica de los angulos aplicados durante la trayectoria.
+# Colocar la grafica de los angulos aplicados durante la trayectoria.
 
-    # crear el modelo de dm_control del robot
-
-    physics = mujoco.Physics.from_xml_path("../assets/UR5/robotModelV3.xml")
-
-    # hacer cinematica inversa
-
-    _JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
-    _TOL = 1.2e-14
-    _MAX_STEPS = timer
-    _MAX_RESETS = 10
-    _INPLACE = [False, True]
-    _TARGET = np.array([target_position[0], target_position[1], target_position[2]])
-    _SITE = "test"
-
-    physics2 = physics.copy(share_model=True)
-
-    result = ik.qpos_from_site_pose(
-        physics=physics2,
-        site_name=_SITE,
-        target_pos=_TARGET,
-        target_quat=None,
-        joint_names=_JOINTS,
-        tol=_TOL,
-        max_steps=_MAX_STEPS,
-        inplace=_INPLACE
-    )
-
-    print("angulos posibles:", result.qpos,"\n \n", "error:", result.err_norm)
+    result = inverse_kinematics(physics, _joints, _target, _site, _tol, _max_steps,
+                                _max_resets, _inplace)
 
     fig6, ax6 = plt.subplots(1, 1)
-    reference = [result.qpos[0] for i in range(len(steps_array))]
+    reference = [result.qpos[0] for i in range(steps)]
     ax6.set_title("Angulo aplicado por el actuador base_link")
     ax6.plot(steps_array, qpos["base_link"], linewidth=2.0, label="trayectoria")
     ax6.plot(steps_array, reference, linewidth=2.0, label="objetivo",
@@ -198,7 +187,7 @@ def main():
     ax6.grid(True)
 
     fig7, ax7 = plt.subplots(1, 1)
-    reference = [result.qpos[1] for i in range(len(steps_array))]
+    reference = [result.qpos[1] for i in range(steps)]
     ax7.set_title("Angulo aplicado por el actuador shoulder_link")
     ax7.plot(steps_array, qpos["shoulder_link"], linewidth=2.0, label="trayectoria")
     ax7.plot(steps_array, reference, linewidth=2.0, label="objetivo",
@@ -209,10 +198,9 @@ def main():
     ax7.grid(True)
 
     fig8, ax8 = plt.subplots(1, 1)
-    reference = [result.qpos[2] for i in range(len(steps_array))]
+    reference = [result.qpos[2] for i in range(steps)]
     ax8.set_title("Angulo aplicado por el actuador elbow_link")
-    ax8.plot(steps_array, qpos["elbow_link"], linewidth=2.0, 
-            label="trayectoria")
+    ax8.plot(steps_array, qpos["elbow_link"], linewidth=2.0, label="trayectoria")
     ax8.plot(steps_array, reference, linewidth=2.0, label="objetivo",
                   linestyle="--", color="gray")
     ax8.set_xlabel("iteraciones")
@@ -221,10 +209,9 @@ def main():
     ax8.grid(True)
 
     fig9, ax9 = plt.subplots(1, 1)
-    reference = [result.qpos[3] for i in range(len(steps_array))]
+    reference = [result.qpos[3] for i in range(steps)]
     ax9.set_title("Angulo aplicado por el actuador wrist_1_link")
-    ax9.plot(steps_array, qpos["wrist_1_link"], linewidth=2.0, 
-            label="trayectoria")
+    ax9.plot(steps_array, qpos["wrist_1_link"], linewidth=2.0, label="trayectoria")
     ax9.plot(steps_array, reference, linewidth=2.0, label="objetivo",
                   linestyle="--", color="gray")
     ax9.set_xlabel("iteraciones")
@@ -233,10 +220,9 @@ def main():
     ax9.grid(True)
 
     fig10, ax10 = plt.subplots(1, 1)
-    reference = [result.qpos[4] for i in range(len(steps_array))]
+    reference = [result.qpos[4] for i in range(steps)]
     ax10.set_title("Angulo aplicado por el actuador wrist_2_link")
-    ax10.plot(steps_array, qpos["wrist_2_link"], linewidth=2.0, 
-            label="trayectoria")
+    ax10.plot(steps_array, qpos["wrist_2_link"], linewidth=2.0, label="trayectoria")
     ax10.plot(steps_array, reference, linewidth=2.0, label="objetivo",
                   linestyle="--", color="gray")
     ax10.set_xlabel("iteraciones")
@@ -245,10 +231,9 @@ def main():
     ax10.grid(True)
 
     fig11, ax11 = plt.subplots(1, 1)
-    reference = [result.qpos[5] for i in range(len(steps_array))]
+    reference = [result.qpos[5] for i in range(steps)]
     ax11.set_title("Angulo aplicado por el actuador wrist_3_link")
-    ax11.plot(steps_array, qpos["wrist_3_link"], linewidth=2.0, 
-            label="trayectoria")
+    ax11.plot(steps_array, qpos["wrist_3_link"], linewidth=2.0, label="trayectoria")
     ax11.plot(steps_array, reference, linewidth=2.0, label="objetivo",
                   linestyle="--", color="gray")
     ax11.set_xlabel("iteraciones")
@@ -257,13 +242,13 @@ def main():
     ax11.grid(True)
 
 # error de los angulos
-    reference = [ 0 for i in range(len(steps_array))]
-    result1 = [result.qpos[0] for i in range(len(steps_array))]
-    result2 = [result.qpos[1] for i in range(len(steps_array))]
-    result3 = [result.qpos[2] for i in range(len(steps_array))]
-    result4 = [result.qpos[3] for i in range(len(steps_array))]
-    result5 = [result.qpos[4] for i in range(len(steps_array))]
-    result6 = [result.qpos[5] for i in range(len(steps_array))]
+    reference = [ 0 for i in range(steps)]
+    result1 = [result.qpos[0] for i in range(steps)]
+    result2 = [result.qpos[1] for i in range(steps)]
+    result3 = [result.qpos[2] for i in range(steps)]
+    result4 = [result.qpos[3] for i in range(steps)]
+    result5 = [result.qpos[4] for i in range(steps)]
+    result6 = [result.qpos[5] for i in range(steps)]
 
     error1 = np.subtract(result1, qpos["base_link"])
     error2 = np.subtract(result2, qpos["shoulder_link"])
@@ -335,35 +320,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-#
-# env = UR5_EnvTest(simulation_frames=1, torque_control= 0.01, distance_threshold=0.05, gui=True)
-# ac =  torch.load("/home/alexis/Documentos/repos/TEG/agents_old/ddpg4/pyt_save/model.pt")
-
-# for i_episode in range(50):
-#     print('---------------------------------------------------------------')
-#     print("estoy en pisodio",i_episode)
-#     print('---------------------------------------------------------------')
-#
-#     observation = env.reset()
-#
-#     for t in range(500):
-#
-#         env.render()
-#
-#         # action = env.action_space.sample() #agente random
-#         action = ac.act(torch.as_tensor(observation, dtype=torch.float16)) # agente vpg
-#
-#         observation, reward, done, info = env.step(action)
-#
-#         if done:
-#             print("la tarea es resuelta en:", t * 0.002)
-#             break
-#
-# env.close()
-
-
-# doctores
-
 

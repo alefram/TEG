@@ -46,7 +46,7 @@ class UR5_EnvTest(gym.Env):
         self.distance_threshold = distance_threshold
 
         #inicializar el modelo del robot
-        model_path = "robotModelV2.xml"
+        model_path = "robotModelV3.xml"
         fullpath = os.path.join(
             os.path.dirname(__file__), "../assets/UR5", model_path)
         if not os.path.exists(fullpath):
@@ -116,8 +116,6 @@ class UR5_EnvTest(gym.Env):
             done = True
 
         info = self.get_info(observation)
-
-        rgb = self._get_obs_rgb_view2
 
         return observation, reward, done, info
 

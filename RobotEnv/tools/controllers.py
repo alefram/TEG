@@ -134,7 +134,6 @@ class Manipulator_Agent():
                             (left_finger[1] + right_finger[1])/2,
                             (left_finger[2] + right_finger[2])/2)
 
-        # gripper_position = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float32)
         target_position = self.sim.data.get_geom_xpos("target").astype(np.float32)
         joints_position = self.sim.data.qpos.flat.copy().astype(np.float32)
         joints_velocity = self.sim.data.qvel.flat.copy().astype(np.float32)
@@ -184,16 +183,15 @@ class Manipulator_Agent():
 
             # calcular la distancia entre el target y el efector final
             gripper_position = np.array([observation[0], observation[1], observation[2]])
-            target_position = np.array([observation[3], observation[4], observation[5]])
-            distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float32)
+            distance_norm = np.linalg.norm(target - gripper_position).astype(np.float32)
 
             # aplicar acción de control
             action = self.model.act(torch.as_tensor(observation, dtype=torch.float32))
             self.sim.data.ctrl[:] = action
-
             self.sim.step()
 
-            # si la distancia entre el target y el limite es menor aplicar torque constante
+            # si la distancia entre el target y el limite es menor aplicar 
+            # torque constante
             if (distance_norm <= distance_threshold):
 
                 #guardar data
@@ -216,11 +214,10 @@ class Manipulator_Agent():
                 data_z.append(gripper_position[2])
 
                 done = True
-                steps = t
-
                 # self.sim.step()
+                steps += 1
 
-                print('resuelto en:', t, "pasos", t*0.002, "seg")
+                print('resuelto en:', steps, "pasos", steps*0.002, "seg")
                 break
 
             #guardar data
@@ -242,9 +239,12 @@ class Manipulator_Agent():
             data_y.append(gripper_position[1])
             data_z.append(gripper_position[2])
 
+            steps += 1
 
-            if t == timer-1:
-                print('no se pudo alcanzar el target en:', t, "pasos", t*0.002, "seg")
+
+            if steps == timer:
+                print('no se pudo alcanzar el target en:', steps, "pasos", steps*0.002, 
+                    "seg")
 
         qpos = {
             "base_link": qpos1,

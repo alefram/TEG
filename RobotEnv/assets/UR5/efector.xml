@@ -59,7 +59,6 @@
                     friction="0.8 0.8 0.8"
                     mesh="inner_knuckle_coarse"
                 />
-
                 <body name="left_inner_finger" pos="0.0345853 0 0.045497" >
                     <inertial
                         pos="0.00602756 0 0.00669926"
