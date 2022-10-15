@@ -3,6 +3,15 @@ from setuptools import setup
 setup(
     name='RobotEnv',
     version='0.0.1',
-    install_requires=['gym', 'mujoco_py'],
+    packages=['RobotEnv'],
+    description='Environments and tools for develop smart controllers',
+    author='Alexis Fraudita',
+    license='Apache License 2.0',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: Apache  Software License'
+    ],
+    install_requires=['gym', 'mujoco_py','dm_mujoco'],
+    python_requires='>=3.7',
     py_modules=[]
 )
