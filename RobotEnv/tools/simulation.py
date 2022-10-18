@@ -39,3 +39,5 @@ def post_target(sim, target, geom_pos):
     simulation_positions = sim.model.geom_pos.copy()
     simulation_positions[geom_pos] = target
     sim.model.geom_pos[:] = simulation_positions
+
+    return target

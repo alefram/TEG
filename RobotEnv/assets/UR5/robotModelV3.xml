@@ -196,7 +196,7 @@ Simulador Mujoco ::Advanced physics simulation engine
         />
 
         <!-- limits square -->
-<!--         <geom
+        <geom
             name="limit"
             pos="-0.1 0 0.475"
             type="box"
@@ -204,7 +204,7 @@ Simulador Mujoco ::Advanced physics simulation engine
             rgba="0.9 0.5 0.2 0.2"
             contype="0"
             conaffinity="0"
-        /> -->
+        />
 
     </worldbody>
 
