@@ -5,7 +5,7 @@ import gym
 from gym import error, spaces, utils 
 from gym.utils import seeding
 
-
+# convertir la observación del ambiente al espacio de observación con sus limites
 def convert_observation_to_space(observation):
     if isinstance(observation, dict):
         space = spaces.Dict(
@@ -99,15 +99,15 @@ class UR5_EnvTest(gym.Env):
         #inicializar variables
         done = False
         reward = 0
-        action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera
+        action = np.clip(action, self.action_space.low, self.action_space.high) # me aseguro que no cambiamos la accion fuera de los limites del target
 
-        # aplicar  control  a la simulación
+        # aplicar acción de control a la simulación
         self.do_simulation(action,self.simulation_frames)
 
-        # obtendo la observacion o el siguiente estado
+        # obtendo la observacion es decir el siguiente estado
         observation = self.get_observation()
 
-        # obtengo la recompenza
+        # obtengo la recompensa
         reward = self.compute_reward(observation, action)
 
         # verifico que la garra este al menos de 5cm dando recompensa 1 y terminar el episodio
@@ -121,6 +121,7 @@ class UR5_EnvTest(gym.Env):
 
 
     def render(self, camera=None):
+        # visualizar la simulación
         if self.Gui:
             self.viewer.render()
 
@@ -180,7 +181,7 @@ class UR5_EnvTest(gym.Env):
 
         self.sim.data.ctrl[:] = ctrl
 
-        #este es el frame skip que
+        #este es el frame skip que da la relación con el controlador del brazo a simular
         for _ in range(n_frames):
             self.sim.step()
 

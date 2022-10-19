@@ -36,6 +36,7 @@ def random_target(target_bounds, geom_pos, sim):
     return goal
 
 def post_target(sim, target, geom_pos):
+    """Cambia el modelo del agente"""
     simulation_positions = sim.model.geom_pos.copy()
     simulation_positions[geom_pos] = target
     sim.model.geom_pos[:] = simulation_positions

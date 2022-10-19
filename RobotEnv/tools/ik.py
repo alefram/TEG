@@ -82,7 +82,5 @@ def main():
     print("angulos posibles:", result.qpos,"\n \n", "error:", result.err_norm) 
 
 
-
-
 if __name__ == '__main__':
     main()

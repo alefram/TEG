@@ -89,6 +89,7 @@ class Manipulator_Agent():
             # calcular la distancia entre el target y el efector final
             gripper_position = np.array([observation[0], observation[1], observation[2]])
             distance_norm = np.linalg.norm(target - gripper_position).astype(np.float32)
+            print(gripper_position)
 
             # aplicar acción de control
             action = self.model.act(torch.as_tensor(observation, dtype=torch.float32))
