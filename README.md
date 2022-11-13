@@ -5,7 +5,7 @@ smart controllers for robot manipulators using Reinforcement Learning.
 
 ### 🚀 Installation
 
-This project use python 3.7+ and it requires mujoco installation you can check
+This project use python 3.6+ and it requires mujoco installation you can check
 [HERE](https://github.com/deepmind/mujoco).
 
 >**NOTE**
