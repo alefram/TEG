@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='RobotEnv',
+    name='TEG',
     version='0.0.1',
     description='Environments and tools for develop smart controllers',
     author='Alexis Fraudita',
@@ -10,7 +10,7 @@ setup(
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache  Software License'
     ],
-    install_requires=['gym', 'mujoco_py'],
+    install_requires=[],
     python_requires='>=3.7',
     py_modules=[]
 )
