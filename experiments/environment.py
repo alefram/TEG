@@ -1,4 +1,3 @@
-import gym
 from RobotEnv.envs.UR5_Env import UR5_EnvTest
 
 env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05, gui=True)
