@@ -1,5 +1,4 @@
-# TEG ![Status badge](https://i  jmg.shields.io/badge/status-in%20progress-important)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# TEG ![Status badge](https://img.shields.io/badge/status-in%20progress-important) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 TEG, is a set of environments and tools to develop smart controllers for robot 
 manipulators using Reinforcement Learning.
