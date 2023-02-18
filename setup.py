@@ -1,16 +1,38 @@
-from setuptools import setup
+""" project setup """
+
+from setuptools import setup, find_packages
+
+VERSION="0.0.1"
 
 setup(
     name='TEG',
-    version='0.0.1',
-    description='Environments and tools for develop smart controllers',
+    version=VERSION,
+    description='Reinforcement Learning Environments for train robot arms agents',
     author='Alexis Fraudita',
+    author_email='cuatroalejandro@gmail.com',
     license='Apache License 2.0',
     classifiers=[
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'License :: OSI Approved :: Apache  Software License'
     ],
-    install_requires=[],
+    install_requires=[
+        "numpy >=1.23.5",
+        "mujoco >=2.3.1.post1"
+    ],
+    packages=[package for package in find_packages() if package.startswith("TEG")],
+    package_data={
+        "TEG": [
+            "*.stl",
+            "*.urdf",
+            "*.xml"
+        ]
+    },
+    url="https://TEG.github.io",
     python_requires='>=3.7',
-    py_modules=[]
+    zip_safe=False,
+    setup_requires=['pytest-runner', 'black'],
+    tests_require=['pytest'],
 )

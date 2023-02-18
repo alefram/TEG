@@ -19,7 +19,7 @@ Simulador Mujoco ::Advanced physics simulation engine
           Version : 2.10
 
 ===========================================================================-->
-<mujoco model="UR5(v1)">
+<mujoco model="UR5(v3)">
 
     <!-- configuracion del compilador -->
     <compiler inertiafromgeom='true' angle='radian' meshdir="meshes/V2"/>
