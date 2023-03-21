@@ -1,9 +1,8 @@
-import mujoco_py 
-import numpy as np 
-import os 
-import gym 
-from gym import error, spaces, utils 
-from gym.utils import seeding
+import mujoco
+import numpy as np
+import os
+import gymnasium as gym
+from gymnasium import spaces
 
 # convertir la observación del ambiente al espacio de observación con sus limites
 def convert_observation_to_space(observation):
@@ -52,17 +51,18 @@ class UR5_EnvTest(gym.Env):
         if not os.path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
 
-        self.robot = mujoco_py.load_model_from_path(fullpath)
-        self.sim = mujoco_py.MjSim(self.robot)
+        self.robot = mujoco.MjModel.from_xml_path(fullpath)
+        self.sim = mujoco.MjData(self.robot)
 
         if self.Gui:
-            self.viewer = mujoco_py.MjViewer(self.sim)
+            pass
+            #self.viewer = mujoco_py.MjViewer(self.sim)
 
 
         #configurar actuadores
         self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
         self.init_qvel = [0,0,0,0,0,0]
-        self.num_actuators = len(self.sim.data.ctrl)
+        self.num_actuators = len(self.sim.ctrl)
         self.qpos_bounds = np.array(((-1, 1), (0, 2), (0, 2), (0, 2), (0, 2), (-1, 1)), dtype=object) # rango de articulaciones
 
         #configurar los espacio de acción
@@ -86,10 +86,10 @@ class UR5_EnvTest(gym.Env):
         #inicializar la posición de un objeto eleatorio para iniciar el episodio
         self.reset_target()
 
-        self.sim.data.qpos[:] = self.init_qpos
-        self.sim.data.qvel[:] = self.init_qvel
+        self.sim.qpos[:] = self.init_qpos
+        self.sim.qvel[:] = self.init_qvel
 
-        self.sim.forward()
+        mujoco.mj_forward(self.robot, self.sim)
 
         return self.get_observation()
 
@@ -120,14 +120,16 @@ class UR5_EnvTest(gym.Env):
         return observation, reward, done, info
 
 
-    def render(self, camera=None):
+    def render(self):
         # visualizar la simulación
         if self.Gui:
-            self.viewer.render()
+            pass
+            #self.viewer.render()
 
     def close(self):
-        if self.viewer is not None:
-            self.viewer = None
+        pass
+        #if self.viewer is not None:
+            #self.viewer = None
 
     ##### funciones utiles ######
 
@@ -136,15 +138,15 @@ class UR5_EnvTest(gym.Env):
             Esta función retorna la posicion y velocidad de las articulaciones y
             la posición xyz de la garra.
         """
-        left_finger = self.sim.data.get_body_xpos("left_inner_finger").astype(np.float16)
-        right_finger = self.sim.data.get_body_xpos("right_inner_finger").astype(np.float16)
+        left_finger = self.sim.body("left_inner_finger").xpos.astype(np.float16)
+        right_finger = self.sim.body("right_inner_finger").xpos.astype(np.float16)
 
         gripper_position = ((left_finger[0] + right_finger[0])/2, (left_finger[1] + right_finger[1])/2, (left_finger[2] + right_finger[2])/2)
 
         # gripper_position = self.sim.data.get_body_xpos('left_inner_finger').astype(np.float32)
-        target_position = self.sim.data.get_geom_xpos("target")
-        joints_position = self.sim.data.qpos.flat.copy().astype(np.float16)
-        joints_velocity = self.sim.data.qvel.flat.copy().astype(np.float16)
+        target_position = self.sim.geom("target").xpos
+        joints_position = self.sim.qpos.flat.copy().astype(np.float16)
+        joints_velocity = self.sim.qvel.flat.copy().astype(np.float16)
 
         observation = np.concatenate(
             (gripper_position, target_position, joints_position, joints_velocity)
@@ -161,12 +163,13 @@ class UR5_EnvTest(gym.Env):
         self.goal = np.random.rand(3) * (self.target_bounds[:, 1] -
                                          self.target_bounds[:, 0]
                                          ) + self.target_bounds[:, 0]
-        geom_positions = self.sim.model.geom_pos.copy()
+        geom_positions = self.sim.model.geom_pos.copy()         #TODO:arreglar geom_positions
+
         prev_goal_location = geom_positions[1]
 
 
         geom_positions[1] = self.goal
-        self.sim.model.geom_pos[:] = geom_positions
+        self.sim.model.geom_pos[:] = geom_positions #TODO:arrglar
 
     def do_simulation(self, ctrl, n_frames):
         """
@@ -183,7 +186,7 @@ class UR5_EnvTest(gym.Env):
 
         #este es el frame skip que da la relación con el controlador del brazo a simular
         for _ in range(n_frames):
-            self.sim.step()
+            mujoco.mj_step(self.robot,self.sim)
 
     def compute_reward(self, state, action):
         """
@@ -215,17 +218,16 @@ class UR5_EnvTest(gym.Env):
         - dist: distancia entre el efector final y el goal
 
         """
-        gripper_position = self.sim.data.get_body_xpos('ee_link').astype(np.float16)
-        target_position = self.sim.data.get_geom_xpos("target").astype(np.float16)
-
+        gripper_position = self.sim.body("ee_link").xpos.astype(np.float16)
+        target_position = self.sim.geom("target").xpos.astype(np.float16)
 
         info = {
             'gripper_position': gripper_position,
             'target_position': target_position,
             'dist': np.linalg.norm(target_position - gripper_position).astype(np.float16),
             'observation': self.get_observation(),
-            'j_position': self.sim.data.qpos.flat.copy().astype(np.float16),
-            'j_velocity': self.sim.data.qvel.flat.copy().astype(np.float16),
+            'j_position': self.sim.qpos.flat.copy().astype(np.float16),
+            'j_velocity': self.sim.qvel.flat.copy().astype(np.float16),
         }
 
         return info

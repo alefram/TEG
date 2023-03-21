@@ -20,7 +20,8 @@ setup(
     ],
     install_requires=[
         "numpy >=1.23.5",
-        "mujoco >=2.3.1.post1"
+        "mujoco >=2.3.1.post1",
+        "gymnasium>=0.27.1"
     ],
     packages=[package for package in find_packages() if package.startswith("TEG")],
     package_data={

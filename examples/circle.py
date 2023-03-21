@@ -94,7 +94,7 @@ def main():
         obs = controller.observe()
         datax.append(obs[0])
         datay.append(obs[1])
-        
+
         q_base += qpos["base_link"]
         q_elbow += qpos["elbow_link"]
         q_shoulder += qpos["shoulder_link"]
@@ -108,7 +108,7 @@ def main():
         ctrl_wrist1 += control["wrist_1_link"]
         ctrl_wrist2 += control["wrist_2_link"]
         ctrl_wrist3 += control["wrist_3_link"]
-        
+
         total_steps1 += steps
 
     controller.change_agent(agent2)

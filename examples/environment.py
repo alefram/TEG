@@ -9,7 +9,6 @@ for i_episode in range(20):
     for t in range(500):
         print("paso ", t)
 
-        
         env.render()
 
         action = env.action_space.sample()
