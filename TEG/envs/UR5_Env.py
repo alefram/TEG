@@ -3,6 +3,7 @@ import numpy as np
 import os
 import gymnasium as gym
 from gymnasium import spaces
+from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 
 # convertir la observación del ambiente al espacio de observación con sus limites
 def convert_observation_to_space(observation):
@@ -36,10 +37,18 @@ class UR5_EnvTest(gym.Env):
     4. Gui: Booleano que indica si se permite visualización del brazo manipulador.
 
     """
-    def __init__(self, simulation_frames, torque_control, distance_threshold, gui):
+    def __init__(self, 
+                simulation_frames,
+                torque_control, 
+                distance_threshold, 
+                render_mode:Optional[str] = None,
+                width: int = 480,
+                height: int = 480,
+                camera_id: Optional[int] = None,
+                camera_name: Optional[str] = None,
+                default_camera_config: Optional[dict] = None):
 
         #inicializar configuraciones de la simulacion
-        self.Gui = gui
         self.simulation_frames = simulation_frames
         self.C_a = torque_control
         self.distance_threshold = distance_threshold
@@ -51,13 +60,9 @@ class UR5_EnvTest(gym.Env):
         if not os.path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
 
+        #init simulation
         self.robot = mujoco.MjModel.from_xml_path(fullpath)
         self.sim = mujoco.MjData(self.robot)
-
-        if self.Gui:
-            pass
-            #self.viewer = mujoco_py.MjViewer(self.sim)
-
 
         #configurar actuadores
         self.init_qpos = [0.2, 1.8, 1.8 ,0.3, 0.7, 0.5]
@@ -77,7 +82,11 @@ class UR5_EnvTest(gym.Env):
         #configurar el target
         self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
 
-
+        #visualizer
+        self.mujoco_renderer = MujocoRenderer(
+            self.robot, self.sim, default_camera_config
+        )
+        
         self.seed()
         self.reset()
 
@@ -122,14 +131,14 @@ class UR5_EnvTest(gym.Env):
 
     def render(self):
         # visualizar la simulación
-        if self.Gui:
-            pass
-            #self.viewer.render()
+        return self.mujoco_renderer.render(
+            self.render_mode, self.camera_id, self.camera_name
+        )
+
 
     def close(self):
-        pass
-        #if self.viewer is not None:
-            #self.viewer = None
+        if self.mujoco_renderer is not None:
+            self.mujoco_renderer.close()
 
     ##### funciones utiles ######
 
