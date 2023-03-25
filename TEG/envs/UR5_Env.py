@@ -3,7 +3,6 @@ import numpy as np
 import os
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 
 # convertir la observación del ambiente al espacio de observación con sus limites
 def convert_observation_to_space(observation):
@@ -37,16 +36,10 @@ class UR5_EnvTest(gym.Env):
     4. Gui: Booleano que indica si se permite visualización del brazo manipulador.
 
     """
-    def __init__(self, 
+    def __init__(self,
                 simulation_frames,
-                torque_control, 
-                distance_threshold, 
-                render_mode:Optional[str] = None,
-                width: int = 480,
-                height: int = 480,
-                camera_id: Optional[int] = None,
-                camera_name: Optional[str] = None,
-                default_camera_config: Optional[dict] = None):
+                torque_control,
+                distance_threshold):
 
         #inicializar configuraciones de la simulacion
         self.simulation_frames = simulation_frames
@@ -56,7 +49,7 @@ class UR5_EnvTest(gym.Env):
         #inicializar el modelo del robot
         model_path = "robotModelV3.xml"
         fullpath = os.path.join(
-            os.path.dirname(__file__), "../assets/UR5", model_path)
+            os.path.dirname(__file__), "../robots/UR5", model_path)
         if not os.path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
 
@@ -82,12 +75,6 @@ class UR5_EnvTest(gym.Env):
         #configurar el target
         self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
 
-        #visualizer
-        self.mujoco_renderer = MujocoRenderer(
-            self.robot, self.sim, default_camera_config
-        )
-        
-        self.seed()
         self.reset()
 
     def reset(self):
@@ -128,17 +115,11 @@ class UR5_EnvTest(gym.Env):
 
         return observation, reward, done, info
 
-
     def render(self):
-        # visualizar la simulación
-        return self.mujoco_renderer.render(
-            self.render_mode, self.camera_id, self.camera_name
-        )
-
+        pass
 
     def close(self):
-        if self.mujoco_renderer is not None:
-            self.mujoco_renderer.close()
+        pass
 
     ##### funciones utiles ######
 
@@ -152,7 +133,6 @@ class UR5_EnvTest(gym.Env):
 
         gripper_position = ((left_finger[0] + right_finger[0])/2, (left_finger[1] + right_finger[1])/2, (left_finger[2] + right_finger[2])/2)
 
-        # gripper_position = self.sim.data.get_body_xpos('left_inner_finger').astype(np.float32)
         target_position = self.sim.geom("target").xpos
         joints_position = self.sim.qpos.flat.copy().astype(np.float16)
         joints_velocity = self.sim.qvel.flat.copy().astype(np.float16)
@@ -172,13 +152,14 @@ class UR5_EnvTest(gym.Env):
         self.goal = np.random.rand(3) * (self.target_bounds[:, 1] -
                                          self.target_bounds[:, 0]
                                          ) + self.target_bounds[:, 0]
-        geom_positions = self.sim.model.geom_pos.copy()         #TODO:arreglar geom_positions
+        
+        self.sim.geom("target").xpos = self.goal
+        #geom_positions = self.sim.model.geom_pos.copy()         #TODO:arreglar geom_positions
 
-        prev_goal_location = geom_positions[1]
+        #prev_goal_location = geom_positions[1]
 
-
-        geom_positions[1] = self.goal
-        self.sim.model.geom_pos[:] = geom_positions #TODO:arrglar
+        #geom_positions[1] = self.goal
+        #self.sim.model.geom_pos[:] = geom_positions #TODO:arrglar
 
     def do_simulation(self, ctrl, n_frames):
         """
@@ -191,7 +172,7 @@ class UR5_EnvTest(gym.Env):
         if np.array(ctrl).shape != self.action_space.shape:
             raise ValueError("dimensión  de las acción no concuerda con el controlador")
 
-        self.sim.data.ctrl[:] = ctrl
+        self.sim.ctrl[:] = ctrl
 
         #este es el frame skip que da la relación con el controlador del brazo a simular
         for _ in range(n_frames):

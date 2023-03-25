@@ -1,6 +1,6 @@
-from RobotEnv.envs.UR5_Env import UR5_EnvTest
+from TEG.envs.UR5_Env import UR5_EnvTest
 
-env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05, gui=True)
+env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05)
 
 for i_episode in range(20):
     print("estoy en pisodio",i_episode)
@@ -9,7 +9,7 @@ for i_episode in range(20):
     for t in range(500):
         print("paso ", t)
 
-        env.render()
+        #env.render()
 
         action = env.action_space.sample()
         print("Action del agente",action)
@@ -28,4 +28,4 @@ for i_episode in range(20):
             print("Episode finished after {} timesteps".format(t+1))
             break
 
-env.close()
+#env.close()

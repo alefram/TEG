@@ -24,6 +24,7 @@ def convert_observation_to_space(observation):
         raise NotImplementedError(type(observation), observation)
 
     return space
+    
 
 
 

@@ -1,1 +1,1 @@
-from RobotEnv.envs.UR5_Env import UR5_EnvTest
+from TEG.envs.UR5_Env import UR5_EnvTest
