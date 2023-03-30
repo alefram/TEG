@@ -154,12 +154,6 @@ class UR5_EnvTest(gym.Env):
                                          ) + self.target_bounds[:, 0]
         
         self.sim.geom("target").xpos = self.goal
-        #geom_positions = self.sim.model.geom_pos.copy()         #TODO:arreglar geom_positions
-
-        #prev_goal_location = geom_positions[1]
-
-        #geom_positions[1] = self.goal
-        #self.sim.model.geom_pos[:] = geom_positions #TODO:arrglar
 
     def do_simulation(self, ctrl, n_frames):
         """
