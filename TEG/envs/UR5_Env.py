@@ -3,6 +3,7 @@ import numpy as np
 import os
 import gymnasium as gym
 from gymnasium import spaces
+from mujoco import viewer
 
 # convertir la observación del ambiente al espacio de observación con sus limites
 def convert_observation_to_space(observation):
@@ -74,9 +75,10 @@ class UR5_EnvTest(gym.Env):
 
         #configurar el target
         self.target_bounds = np.array(((-0.3, 0.1), (-0.3, 0.3), (0.45, 0.5)), dtype=object) #limites del target a alcanzar
+        
 
         self.reset()
-
+    
     def reset(self):
 
         #inicializar la posición de un objeto eleatorio para iniciar el episodio
@@ -115,11 +117,6 @@ class UR5_EnvTest(gym.Env):
 
         return observation, reward, done, info
 
-    def render(self):
-        pass
-
-    def close(self):
-        pass
 
     ##### funciones utiles ######
 
@@ -178,6 +175,7 @@ class UR5_EnvTest(gym.Env):
         """
         gripper_position = np.array([state[0], state[1], state[2]])
         target_position = self.goal.copy().astype(np.float16)
+
 
 
         distance_norm = np.linalg.norm(target_position - gripper_position).astype(np.float16)
