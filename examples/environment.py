@@ -1,30 +1,17 @@
-from TEG.envs.UR5_Env import UR5_EnvTest
+from TEG.envs.UR5.RandomTrayectoryV0 import UR5_EnvTest
 import TEG.tools.simulation as sim
 
 env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05)
 
 def main():
-    for i_episode in range(5):
-        print("estoy en pisodio",i_episode)
+    for episode in range(5):
+        print("episode {}".format(episode))
         env.reset()
 
         for t in range(1000):
-            # print("paso ", t)
-
-
             action = env.action_space.sample()
-            # print("Action del agente",action)
             observation, reward, done, info = env.step(action)
-
-            # print('-----------------')
-            # print('observacion')
-            # print('posicion de la garra:',info['gripper_position'])
-            # print('posicion de las articulaciones:', info['j_position'])
-            # print('velocidad de las articulaciones:', info['j_velocity'])
-            # print('distancia a la meta:', info['dist'])
-            # print('recompens:', reward)
-            # print('---------------------------------')
-
+            
             if done:
                 print("Episode finished after {} timesteps".format(t+1))
                 break
