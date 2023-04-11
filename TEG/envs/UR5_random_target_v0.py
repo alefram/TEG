@@ -49,7 +49,7 @@ class UR5_EnvTest(gym.Env):
         #inicializar el modelo del robot
         model_path = "Model-V0.xml"
         fullpath = os.path.join(
-            os.path.dirname(__file__), "../../assets/UR5", model_path)
+            os.path.dirname(__file__), "../assets/UR5", model_path)
         if not os.path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
 

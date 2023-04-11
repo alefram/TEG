@@ -1,4 +1,4 @@
-from TEG.envs.UR5.RandomTrayectoryV0 import UR5_EnvTest
+from TEG.envs.UR5_random_target_v0 import UR5_EnvTest
 import TEG.tools.simulation as sim
 
 env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05)
