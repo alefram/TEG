@@ -1,6 +1,6 @@
 # TEG 
 
-TEG, is a environment to develop AI agents for robot 
+TEG, is an environment to develop AI agents for robot 
 manipulators using Reinforcement Learning. It's based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
 and [Mujoco](https://github.com/deepmind/mujoco) libraries.
 
