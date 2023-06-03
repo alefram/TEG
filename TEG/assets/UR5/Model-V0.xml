@@ -1,47 +1,43 @@
 <!-- ===========================================================================
 
-Este modelo esta basado en el modelo del robot UR5 de la universidad de leeds
-del departamento de robotica del mismo
+This model is based on the UR5 robot model from the robotics department at the 
+University of Leeds. 
 
+Author: Alexis Alejandro Fraudita Macia
 
-Autor:  Alexis Alejandro Fraudita Macia
+The original model can be found at https://github.com/roboticsleeds/mujoco-ur5-model
+downloaded on January 11, 2022 
+Author:Rafael Papallas.
+Contact: @rpapallas (twitter)
 
+Robot Model: UR5 Arm from the company Universal-robots Inc.
 
-Modelo Original se puede encontrar en: https://github.com/roboticsleeds/mujoco-ur5-model
-Descargado el 11 de enero del 2022
-Autor:Rafael Papallas
-Contacto: @rpapallas (twitter)
-
-
-Modelo del Robot: UR5 Arm de la empresa Universal-robots Inc
-
-Simulador Mujoco ::Advanced physics simulation engine
-          Version : 2.10
+Simulator Mujoco ::Advanced physics simulation engine
+Version: 2.10
 
 ===========================================================================-->
 <mujoco model="UR5(v3)">
 
-    <!-- configuracion del compilador -->
+    <!-- Compiler configuration -->
     <compiler inertiafromgeom='true' angle='radian' meshdir="meshes/V2"/>
     <option  timestep="0.002" gravity="0 0 0"/>
 
-    <!-- valores por defecto para la simulación -->
+    <!-- default values -->
     <default>
         <light castshadow="false" diffuse="1 1 1"/>
         <joint frictionloss="1" damping="1"/>
     </default>
 
-    <!-- meshes, materiales y texturas -->
+    <!-- meshes, material, and textures -->
     <asset>
         <include file="assets.xml"/>
     </asset>
 
-    <!-- objetos a renderizar -->
     <worldbody>
 
         <camera name="view2" pos="1.0 0.7 0.3" xyaxes="-1 1 0 0 0 1" fovy="45" ipd="0.068"/>
 
-        <!-- piso -->
+        <!-- floor -->
         <geom
             name="floor"
             pos="0 0 0"
@@ -51,16 +47,16 @@ Simulador Mujoco ::Advanced physics simulation engine
             condim="3"
         />
 
-        <!-- base del robot -->
+        <!-- robot base -->
         <body name="base" pos="0 0 .2">
             <geom size ="1 1 .2" type="box" material="matgeom" rgba="0 0.5 0.5 1"/>
         </body>
 
-        <!-- luces -->
+        <!-- lights -->
         <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
         <light directional="false" pos="-0.5 0.5 1.5" dir="0 -1 0" />
 
-        <!-- modelo del robot-->
+        <!-- robot model -->
         <body name="robot" pos="0.5 0 0.4">
             <geom
                 pos="0 0 0"
@@ -72,7 +68,7 @@ Simulador Mujoco ::Advanced physics simulation engine
             <body name="base_link" pos="0 0 0.086" quat="-0.03489996 0. 0. -0.99939078">
                 <inertial pos="0 0 0" mass="3.7" diaginertia="0.0064 0.0084 0.0064" />
                 <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="shoulder" />
-                <!-- indicador de actuador 1 -->
+                <!-- actuator 1 -->
                 <geom
                     name="base_cap"
                     type="cylinder"
@@ -89,7 +85,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                 <body name="shoulder_link" pos="0 0.13585 0" quat="0.73727628 0. -0.67559182 0.">
                     <inertial pos="0 0 0.28" mass="8.393" diaginertia="0.0078 0.2100 0.2100"/>
                     <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="upperarm"/>
-                    <!-- indicador de actuador 2 -->
+                    <!-- actuator 2 -->
                     <geom
                         name="shoulder_cap"
                         type="cylinder"
@@ -107,7 +103,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                     <body name="elbow_link" pos="0 -0.1197 0.425" quat="0.99904822 0. -0.04361939 0. ">
                         <inertial pos="0 0 0.25" mass="2.275" diaginertia="0.0016 0.0462 0.0462" />
                         <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="forearm" />
-                        <!-- indicador de actuador 3 -->
+                        <!-- actuator 3 -->
                         <geom
                             name="elbow_cap"
                             type="cylinder"
@@ -124,7 +120,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                         <body name="wrist_1_link" pos="0 0 0.39225" quat="0.707107 0. -0.707107 0.">
                             <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="1.219" diaginertia="0.0016 0.0016 0.0009"/>
                             <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="wrist1"/>
-                            <!-- indicador de actuador 4 -->
+                            <!-- actuator 4 -->
                             <geom
                                 name="wrist_1_cap"
                                 type="cylinder"
@@ -141,7 +137,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                             <body name="wrist_2_link" pos="0 0.093 0" quat="0.70710678 0. 0. -0.70710678">
                                 <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="1.219" diaginertia="0.0016 0.0016 0.0009"/>
                                 <geom type="mesh" rgba="0.7 0.7 0.7 1" friction="0.4 0.4 0.4" mesh="wrist2"/>
-                                <!-- indicador de actuador 5 -->
+                                <!-- actuator 5 -->
                                 <geom
                                     name="wrist_2_cap"
                                     type="cylinder"
@@ -158,7 +154,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                                 <body name="wrist_3_link" pos="0 0 0.09465" quat="0 0 -1 0">
                                     <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5"  mass="0.1879" diaginertia="0.0001 0.0001 0.0001"/>
                                     <geom type="mesh" rgba="0.7 0.7 0.7 1" friction="0.8 0.8 0.8" mesh="wrist3"/>
-                                    <!-- indicador de actuador 6 -->
+                                    <!-- actuator 6 -->
                                     <geom
                                         name="wrist_3_cap"
                                         type="cylinder"
@@ -172,7 +168,7 @@ Simulador Mujoco ::Advanced physics simulation engine
                                     />
                                     <joint name="joint6" pos="0 0 0" axis="0 1 0"/>
 
-                                    <!-- efector final -->
+                                    <!-- end effector -->
                                     <site name="test" pos="0 0.0823 0" quat="0.707107 0 0 0.707107"/>
                                     <include file="efector.xml"/>
                                 </body>
@@ -208,7 +204,7 @@ Simulador Mujoco ::Advanced physics simulation engine
 
     </worldbody>
 
-    <!-- actuadores -->
+    <!-- actuators -->
     <actuator>
         <motor name="joint1_motor" joint="joint1" ctrllimited="true" gear="100" ctrlrange="-3.141 3.141"/>
         <motor name="joint2_motor" joint="joint2" ctrllimited="true" gear="5" ctrlrange="0 3.141"/>

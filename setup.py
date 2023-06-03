@@ -1,5 +1,4 @@
 """ project setup """
-
 from setuptools import setup, find_packages
 
 VERSION="0.0.1"
@@ -31,7 +30,6 @@ setup(
             "*.xml"
         ]
     },
-    url="https://TEG.github.io",
     python_requires='>=3.7',
     zip_safe=False,
     setup_requires=['pytest-runner', 'black'],

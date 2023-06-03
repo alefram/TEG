@@ -1,4 +1,5 @@
 .ipynb_checkpoints/
 *.egg-info/
+*.egg/
 *__pycache__/
- 
+venv

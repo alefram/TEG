@@ -1,12 +1,9 @@
-# TEG ![Status badge](https://img.shields.io/badge/status-in%20progress-important) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# TEG ![Status badge](https://img.shields.io/badge/status-in%20progress-important) 
+ <!--[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)-->
 
-TEG, is a set of environments to develop AI agents for robot 
+TEG, is a environment to develop AI agents for robot 
 manipulators using Reinforcement Learning. It's based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
 and [Mujoco](https://github.com/deepmind/mujoco) libraries.
-
-<!--## Robots and environments-->
-
-
 
 ## Installation
 

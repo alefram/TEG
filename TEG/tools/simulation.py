@@ -1,6 +1,6 @@
 from mujoco import viewer
 
 def render_simulation(loader):
-    """Crea el viewer para visualizar la simulación"""
+    """Create viewer to render simulation"""
     render = viewer.launch(loader=loader)
 
