@@ -26,8 +26,11 @@ def convert_observation_to_space(observation):
 
 
 
-class UR5_EnvTest(gym.Env):
+class UR5Env_v0(gym.Env):
     """
+    This environment can be used to train an RL agent to control a UR5 robot 
+    arm to reach a target position while minimizing the torque used
+
     ### initial arguments:
 
     1. simulation_frames: number of simulation steps using one action of the agent
@@ -104,7 +107,7 @@ class UR5_EnvTest(gym.Env):
         if (reward == 1):
             done = True
 
-        info = self.get_info(observation)
+        info = self.get_info()
 
         return observation, reward, done, info
 
@@ -175,7 +178,7 @@ class UR5_EnvTest(gym.Env):
 
         return (-distance_norm - self.C_a * action_norm).astype(np.float16)
 
-    def get_info(self, observation):
+    def get_info(self):
         """
         This function returns info
 

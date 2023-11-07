@@ -1,20 +1,7 @@
 """ project setup """
-import pathlib
 from setuptools import setup, find_packages
 
-CWD = pathlib.Path(__file__).absolute().parent
-
-VERSION="0.0.1"
-
-def get_version():
-    """Gets TEG version."""
-    path = CWD / "TEG" / "__init__.py"
-    content = path.read_text()
-
-    for line in content.splitlines():
-        if line.startswith("__version__"):
-            return line.strip().split()[-1].strip().strip('"')
-    raise RuntimeError("bad version data in __init__.py")
+VERSION="1.0.0rc1"
 
 setup(
     name='TEG',

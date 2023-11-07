@@ -22,9 +22,9 @@ TEG environments are simple Python `env` classes to allow an AI agent to interac
 with them very simple. Here's an example:
 
 ```python
-from TEG.envs.UR5.RandomTrayectoryV0 import UR5_EnvTest
+from TEG.envs.UR5_v0 import UR5Env_v0
 
-env = UR5_EnvTest(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05)
+env = UR5Env_v0(simulation_frames=5, torque_control= 0.01, distance_threshold=0.05)
 
 def main():
     for episode in range(5):
