@@ -2,11 +2,12 @@
 
 TEG, is an environment to develop AI agents for robot 
 manipulators using Reinforcement Learning. It's based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
-and [Mujoco](https://github.com/deepmind/mujoco) libraries.
+and [Mujoco](https://github.com/deepmind/mujoco).
 
 ## Installation
 
 This project use python 3.7+
+
 ```bash
 
 git clone https://github.com/Alexfm101/TEG.git 
