@@ -1,12 +1,20 @@
 # TEG 
 
-TEG, is an environment to develop AI agents for robot 
-manipulators using Reinforcement Learning. It's based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
+TEG is a straightforward environment for Reinforcement Learning that enables 
+the training of RL agents for a robot manipulator. It's based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium)
 and [Mujoco](https://github.com/deepmind/mujoco).
 
 ## Installation
 
 This project use python 3.7+
+
+You can install it by using pip
+
+```bash
+pip install TEG
+```
+
+Or manually cloning the github repository
 
 ```bash
 
@@ -18,7 +26,7 @@ python -m pip install -e .
 
 ## Example
 
-TEG environments are simple Python `env` classes to allow an AI agent to interact
+TEG environment are simple Python `env` classes to allow an AI agent to interact
 with them very simple. Here's an example:
 
 ```python
@@ -34,6 +42,7 @@ def main():
         for t in range(1000):
             action = env.action_space.sample()
             observation, reward, done, info = env.step(action)
+            
             
             if done:
                 print("Episode finished after {} timesteps".format(t+1))
